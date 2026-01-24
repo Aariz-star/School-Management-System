@@ -9,7 +9,7 @@ include 'config.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ideal Model School - Management System</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=<?php echo time(); ?>">
 </head>
 <body>
 
@@ -38,17 +38,24 @@ include 'config.php';
             <h1>Ideal Model School</h1>
             <p>Student Management System</p>
         </div>
+        <button class="menu-toggle" onclick="toggleSidebar()">Dashboard</button>
     </header>
 
-    <!-- Navigation Tabs -->
-    <nav class="nav-container">
-        <button class="nav-btn active"  onclick="showForm('student')">Student Registration</button>
-        <button class="nav-btn"         onclick="showForm('add_teacher')">Add Teacher</button>
-        <button class="nav-btn"         onclick="showForm('add_class')">Add Class</button>
-        <button class="nav-btn"         onclick="showForm('teacher')">Teacher Assignments</button>
-        <button class="nav-btn"         onclick="showForm('attendance')">Attendance</button>
-        <button class="nav-btn"         onclick="showForm('grade')">Grade Entry</button>
-        <button class="nav-btn"         onclick="showForm('fee')">Fee Management</button>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <nav class="nav-container" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Dashboard Menu</h3>
+            <button class="close-btn" onclick="toggleSidebar()">&times;</button>
+        </div>
+        <button class="nav-btn active"  onclick="showForm('student'); toggleSidebar()">Student Registration</button>
+        <button class="nav-btn"         onclick="showForm('add_teacher'); toggleSidebar()">Add Teacher</button>
+        <button class="nav-btn"         onclick="showForm('add_class'); toggleSidebar()">Classes & Subjects</button>
+        <button class="nav-btn"         onclick="showForm('teacher'); toggleSidebar()">Teacher Assignments</button>
+        <button class="nav-btn"         onclick="showForm('attendance'); toggleSidebar()">Attendance</button>
+        <button class="nav-btn"         onclick="showForm('grade'); toggleSidebar()">Grade Entry</button>
+        <button class="nav-btn"         onclick="showForm('fee'); toggleSidebar()">Fee Management</button>
     </nav>
 
     <!-- Forms Container -->
@@ -62,9 +69,8 @@ include 'config.php';
             <div class="form-grid">
                 <input type="text" name="full_name" placeholder="Full Name" required>
                 <input type="date" name="admission_date" required>
-                <input type="text" name="guardian_name" placeholder="Parent/Guardian Name" required>
-                <input type="tel"  name="contact_number" placeholder="Contact Number" required>
-                <input type="email" name="email" placeholder="Email Address" required>
+                <input type="email" name="email" placeholder="Student Email (Optional)">
+                <input type="tel"  name="contact_number" placeholder="Student Contact (Optional)">
                 <select name="class_id" required>
                     <option value="">Select Class / Grade</option>
                     <?php
@@ -74,6 +80,13 @@ include 'config.php';
                     }
                     ?>
                 </select>
+                
+                <!-- Guardian Details Section -->
+                <input type="text" name="guardian_name" placeholder="Guardian Name" required>
+                <input type="tel" name="guardian_contact" placeholder="Guardian Contact" required>
+                <input type="email" name="guardian_email" placeholder="Guardian Email">
+                <input type="text" name="relationship" placeholder="Relationship (e.g. Father)" required>
+                <textarea name="guardian_address" placeholder="Guardian Address" rows="1" style="min-height: 50px;"></textarea>
             </div>
             <button class="submit-btn" type="submit">Register Student</button>
         </form>
@@ -115,13 +128,115 @@ include 'config.php';
         <!-- ──────────────────────────────────────────────── -->
         <!-- Add Class Form                                   -->
         <!-- ──────────────────────────────────────────────── -->
-        <form id="add_class" class="form-content" action="add_classes.php" method="post">
-            <h2>Add Class / Grade</h2>
-            <div class="form-grid">
-                <input type="text" name="name" placeholder="Class Name (e.g. Play Group, 1st, 2nd)" required>
+        <div id="add_class" class="form-content">
+            <h2>Manage Classes & Subjects</h2>
+            
+            <!-- ──────────────────────────────────────────────── -->
+            <!-- SUBJECTS MANAGEMENT SECTION                      -->
+            <!-- ──────────────────────────────────────────────── -->
+            <div style="background: rgba(255, 255, 255, 0.03); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid rgba(0, 212, 255, 0.1);">
+                <h3 style="color: #00d4ff; margin-bottom: 1rem; border-bottom: 1px solid #333; padding-bottom: 0.5rem;">Subject Management</h3>
+                
+                <!-- Add Subject -->
+                <form action="add_subject.php" method="post" style="margin-bottom: 1.5rem;">
+                    <div class="form-grid" style="grid-template-columns: 2fr 1fr; gap: 1rem; align-items: end;">
+                        <input type="text" name="subject_name" placeholder="New Subject Name (e.g. Computer Science)" required>
+                        <button class="submit-btn" type="submit" style="margin-top: 0;">Add Subject</button>
+                    </div>
+                </form>
+
+                <!-- Delete Subject -->
+                <form action="delete_subject.php" method="post" onsubmit="return confirm('⚠️ WARNING: Delete this subject?\n\nThis will remove it from ALL classes and teachers.');">
+                    <div class="form-grid" style="grid-template-columns: 2fr 1fr; gap: 1rem; align-items: end;">
+                        <select name="subject_id" required>
+                            <option value="">Select Subject to Delete</option>
+                            <?php
+                            $res = $conn->query("SELECT id, name FROM subjects ORDER BY name");
+                            while($row = $res->fetch_assoc()) {
+                                echo "<option value='{$row['id']}'>{$row['name']}</option>";
+                            }
+                            ?>
+                        </select>
+                        <button class="submit-btn" type="submit" style="margin-top: 0; background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%); border-color: #ff4444;">Delete Subject</button>
+                    </div>
+                </form>
             </div>
-            <button class="submit-btn" type="submit">Add Class</button>
-        </form>
+
+            <!-- ──────────────────────────────────────────────── -->
+            <!-- CLASS MANAGEMENT SECTION                         -->
+            <!-- ──────────────────────────────────────────────── -->
+            <!-- Add Class Section -->
+            <form action="add_classes.php" method="post" style="margin-bottom: 3rem;">
+                <h3 style="color: #00d4ff; margin-bottom: 1rem; border-bottom: 1px solid #333; padding-bottom: 0.5rem;">Class Management</h3>
+                <h4 style="color: #e0e0e0; margin-bottom: 0.5rem; font-size: 0.9rem; text-transform: uppercase;">Create New Class</h4>
+                <div class="form-grid">
+                    <input type="text" name="name" placeholder="Class Name (e.g. Play Group, 1st, 2nd)" required>
+                    
+                    <div class="form-full-width">
+                        <label class="subjects-label">Select Subjects taught in this Class:</label>
+                        <div class="subjects-grid">
+                            <?php
+                            $res = $conn->query("SELECT id, name FROM subjects ORDER BY name");
+                            if ($res && $res->num_rows > 0) {
+                                while($row = $res->fetch_assoc()) {
+                                    echo "<label class='subject-checkbox-label'>";
+                                    echo "<input type='checkbox' name='subjects[]' value='{$row['id']}'>";
+                                    echo htmlspecialchars($row['name']);
+                                    echo "</label>";
+                                }
+                            } else {
+                                echo "<p class='no-subjects-msg'>No subjects found.</p>";
+                            }
+                            ?>
+                        </div>
+                    </div>
+                </div>
+                <button class="submit-btn" type="submit">Add Class</button>
+            </form>
+
+            <!-- Drop Class & Unlink Subject Section -->
+            <form action="delete_class.php" method="post" onsubmit="return confirm('⚠️ WARNING: Are you sure you want to delete this class?\n\nThis will delete the class record permanently.');">
+                <h4 style="color: #ff4444; margin-bottom: 0.5rem; font-size: 0.9rem; text-transform: uppercase; margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">Drop Entire Class</h4>
+                <div class="form-grid">
+                    <select name="class_id" required style="border-color: #ff4444;">
+                        <option value="">Select Class to Drop</option>
+                        <?php
+                        $res = $conn->query("SELECT id, name FROM classes ORDER BY name");
+                        while($row = $res->fetch_assoc()) {
+                            echo "<option value='{$row['id']}'>{$row['name']}</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+                <button class="submit-btn" type="submit" style="background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%); border-color: #ff4444;">Drop Class</button>
+            </form>
+
+            <!-- Remove Subject from Class -->
+            <form action="delete_class_subject.php" method="post" style="margin-top: 2rem;">
+                <h4 style="color: #ff4444; margin-bottom: 0.5rem; font-size: 0.9rem; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">Remove Subject from Class</h4>
+                <div class="form-grid">
+                    <select name="class_id" required>
+                        <option value="">Select Class</option>
+                        <?php
+                        $res = $conn->query("SELECT id, name FROM classes ORDER BY name");
+                        while($row = $res->fetch_assoc()) {
+                            echo "<option value='{$row['id']}'>{$row['name']}</option>";
+                        }
+                        ?>
+                    </select>
+                    <select name="subject_id" required>
+                        <option value="">Select Subject to Remove</option>
+                        <?php
+                        $res = $conn->query("SELECT id, name FROM subjects ORDER BY name");
+                        while($row = $res->fetch_assoc()) {
+                            echo "<option value='{$row['id']}'>{$row['name']}</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+                <button class="submit-btn" type="submit" style="background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%); border-color: #ff4444;">Unlink Subject</button>
+            </form>
+        </div>
 
         <!-- ──────────────────────────────────────────────── -->
         <!-- Teacher Assignment Form                          -->
@@ -249,11 +364,13 @@ include 'config.php';
         <h2>Registered Students</h2>
 
         <?php
-        $sql = "SELECT s.id, s.full_name, s.email, s.guardian_name, s.contact_number,
+        $sql = "SELECT s.id, s.full_name, s.email, s.contact_number,
+                       g.guardian_name, g.contact_number AS guardian_contact,
                        DATE_FORMAT(s.admission_date, '%d-%m-%Y') AS adm_date,
                        c.name AS class_name
                 FROM students s
                 LEFT JOIN classes c ON s.class_id = c.id
+                LEFT JOIN guardians g ON s.guardian_id = g.id
                 ORDER BY s.id DESC";
 
         $result = $conn->query($sql);
@@ -266,8 +383,8 @@ include 'config.php';
                     <th>ID</th>
                     <th>Name</th>
                     <th>Class</th>
-                    <th>Guardian</th>
-                    <th>Contact</th>
+                    <th>Guardian Name</th>
+                    <th>Guardian Contact</th>
                     <th>Email</th>
                     <th>Admission</th>
                     <th>Actions</th>
@@ -279,8 +396,8 @@ include 'config.php';
                     <td><?= $row['id'] ?></td>
                     <td><?= htmlspecialchars($row['full_name']) ?></td>
                     <td><?= htmlspecialchars($row['class_name'] ?? '-') ?></td>
-                    <td><?= htmlspecialchars($row['guardian_name']) ?></td>
-                    <td><?= htmlspecialchars($row['contact_number']) ?></td>
+                    <td><?= htmlspecialchars($row['guardian_name'] ?? 'N/A') ?></td>
+                    <td><?= htmlspecialchars($row['guardian_contact'] ?? 'N/A') ?></td>
                     <td><?= htmlspecialchars($row['email']) ?></td>
                     <td><?= $row['adm_date'] ?></td>
                     <td>

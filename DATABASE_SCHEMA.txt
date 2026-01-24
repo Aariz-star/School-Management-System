@@ -1,0 +1,138 @@
+=== DATABASE STRUCTURE & RELATIONSHIPS ===
+
+Paste your database diagram or the output from db_inspector.php below.
+You can also describe the new relations you want to add here.
+
+-- CURRENT TABLES --
+(Paste here)
+
+-- PLANNED CHANGES --
+(Describe what you want to add, e.g., "Add Exams table linked to Students")
+
+================================================================================
+1. ENTITY: guardians (Parental/Guardian Records)
+================================================================================
+- id (INT, PK, AI)
+- guardian_name (VARCHAR 100)
+- contact_number (VARCHAR 20)
+- email (VARCHAR 100)
+- address (TEXT)
+- relationship_to_student (VARCHAR 50)
+
+================================================================================
+2. ENTITY: classes (Grade Levels/Sections)
+================================================================================
+- id (INT, PK, AI)
+- name (VARCHAR 50)
+
+================================================================================
+3. ENTITY: students (Student Profiles)
+================================================================================
+- id (INT, PK, AI)
+- full_name (VARCHAR 100)
+- admission_date (DATE)
+- email (VARCHAR 20)
+- contact_number (VARCHAR 20)
+- status (ENUM: 'Active', 'Graduated', 'Withdrawn')
+- class_id (INT, FK -> classes.id)
+- guardian_id (INT, FK -> guardians.id)
+
+================================================================================
+4. ENTITY: teachers (Faculty Staff)
+================================================================================
+- id (INT, PK, AI)
+- name (VARCHAR 50)
+- father_name (VARCHAR 100)
+- salary (DECIMAL 10,2)
+- remaining_payment (DECIMAL 10,2)
+- phone (VARCHAR 20)
+- email (VARCHAR 100)
+
+================================================================================
+5. ENTITY: subjects (Course Catalog)
+================================================================================
+- id (INT, PK, AI)
+- name (VARCHAR 50)
+
+================================================================================
+6. JUNCTION: class_subjects (Curriculum Mapping)
+================================================================================
+- class_id (INT, FK -> classes.id)
+- subject_id (INT, FK -> subjects.id)
+- PRIMARY KEY (class_id, subject_id)
+
+================================================================================
+7. ENTITY: teacher_assignments (Classroom Responsibility)
+================================================================================
+- id (INT, PK, AI)
+- teacher_id (INT, FK -> teachers.id)
+- subject_id (INT, FK -> subjects.id)
+- class_id (INT, FK -> classes.id)
+- academic_year (VARCHAR 50)
+
+================================================================================
+8. ENTITY: exams (Examination Events)
+================================================================================
+- id (INT, PK, AI)
+- exam_name (VARCHAR 100)
+- exam_type (ENUM: 'Monthly', 'Midterm', 'Final', 'Quiz')
+- start_date (DATE)
+- total_marks (INT)
+- passing_marks (INT)
+
+================================================================================
+9. ENTITY: grades (Student Academic Performance)
+================================================================================
+- id (INT, PK, AI)
+- student_id (INT, FK -> students.id)
+- subject_id (INT, FK -> subjects.id)
+- exam_id (INT, FK -> exams.id)
+- score (INT)
+- term (VARCHAR 50)
+
+================================================================================
+10. ENTITY: attendance (Daily Student Presence)
+================================================================================
+- id (INT, PK, AI)
+- student_id (INT, FK -> students.id)
+- date (DATE)
+- status (ENUM: 'Present', 'Absent')
+
+================================================================================
+11. ENTITY: teacher_attendance (Staff Clock-in/out)
+================================================================================
+- id (INT, PK, AI)
+- teacher_id (INT, FK -> teachers.id)
+- date (DATE)
+- status (ENUM: 'Present', 'Absent', 'Late', 'Leave')
+- check_in_time (TIME)
+- check_out_time (TIME)
+
+================================================================================
+12. ENTITY: fees (Student Financial Inflow)
+================================================================================
+- id (INT, PK, AI)
+- student_id (INT, FK -> students.id)
+- amount (DECIMAL 10,2)
+- due_date (DATE)
+- status (ENUM: 'Paid', 'Pending')
+
+================================================================================
+13. ENTITY: salary_payments (Teacher Financial Outflow)
+================================================================================
+- id (INT, PK, AI)
+- teacher_id (INT, FK -> teachers.id)
+- amount_paid (DECIMAL 10,2)
+- bonus_or_deduction (DECIMAL 10,2)
+- payment_date (DATE)
+- payment_month (VARCHAR 20)
+- status (ENUM: 'Paid', 'Partial', 'Pending')
+
+================================================================================
+14. ENTITY: school_expenses (Operational Ledger)
+================================================================================
+- id (INT, PK, AI)
+- expense_category (ENUM: 'Utilities', 'Rent', 'Maintenance', 'Stationery', 'Other')
+- description (TEXT)
+- amount (DECIMAL 10,2)
+- expense_date (DATE)

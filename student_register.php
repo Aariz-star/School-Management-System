@@ -7,27 +7,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $full_name      = trim($_POST['full_name'] ?? '');
     $admission_date = $_POST['admission_date'] ?? '';
-    $guardian_name  = trim($_POST['guardian_name'] ?? '');
-    $contact        = trim($_POST['contact_number'] ?? '');
     $email          = trim($_POST['email'] ?? '');
+    $contact        = trim($_POST['contact_number'] ?? '');
     $class_id       = (int)($_POST['class_id'] ?? 0);
+    
+    // Guardian Details
+    $g_name         = trim($_POST['guardian_name'] ?? '');
+    $g_contact      = trim($_POST['guardian_contact'] ?? '');
+    $g_email        = trim($_POST['guardian_email'] ?? '');
+    $g_relation     = trim($_POST['relationship'] ?? '');
+    $g_address      = trim($_POST['guardian_address'] ?? '');
 
     $errors = [];
 
     if (empty($full_name))      $errors[] = "Full name is required.";
     if (empty($admission_date)) $errors[] = "Admission date is required.";
-    if (empty($guardian_name))  $errors[] = "Guardian name is required.";
-    if (empty($contact))        $errors[] = "Contact number is required.";
-    if (empty($email))          $errors[] = "Email is required.";
+    if (empty($g_name))         $errors[] = "Guardian name is required.";
+    if (empty($g_contact))      $errors[] = "Guardian contact is required.";
     if ($class_id <= 0)         $errors[] = "Please select a class.";
 
     if (empty($errors)) {
+        // 1. Insert Guardian First
+        $stmt_g = $conn->prepare("INSERT INTO guardians (guardian_name, contact_number, email, address, relationship_to_student) VALUES (?, ?, ?, ?, ?)");
+        $stmt_g->bind_param("sssss", $g_name, $g_contact, $g_email, $g_address, $g_relation);
+        
+        if (!$stmt_g->execute()) {
+            $_SESSION['error'] = "✗ Guardian Error: " . $conn->error;
+            header("Location: index.php");
+            exit;
+        }
+        $guardian_id = $conn->insert_id;
+        $stmt_g->close();
+
+        // 2. Insert Student linked to Guardian
         $stmt = $conn->prepare("
             INSERT INTO students
-            (full_name, admission_date, guardian_name, contact_number, email, class_id)
+            (full_name, admission_date, email, contact_number, class_id, guardian_id)
             VALUES (?, ?, ?, ?, ?, ?)
         ");
-        $stmt->bind_param("sssssi", $full_name, $admission_date, $guardian_name, $contact, $email, $class_id);
+        
+        $stmt->bind_param("ssssii", $full_name, $admission_date, $email, $contact, $class_id, $guardian_id);
 
         if ($stmt->execute()) {
             $_SESSION['success'] = "✓ Student registered successfully! ID: " . $conn->insert_id;

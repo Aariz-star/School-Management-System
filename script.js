@@ -1,4 +1,14 @@
 /**
+ * Toggle Sidebar Visibility
+ */
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+}
+
+/**
  * Toggle Teachers List Visibility
  */
 function toggleTeachersList() {
@@ -158,4 +168,3 @@ function validateForm(form) {
     return true;
 }
 */
-

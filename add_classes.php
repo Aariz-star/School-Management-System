@@ -6,6 +6,7 @@ include 'config.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Get form data
     $name = isset($_POST['name']) ? trim($_POST['name']) : '';
+    $subjects = isset($_POST['subjects']) ? $_POST['subjects'] : [];
     
     // Validation
     if (empty($name)) {
@@ -40,7 +41,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("s", $name);
     
     if ($stmt->execute()) {
-        $_SESSION['success'] = "Class '$name' added successfully!";
+        $class_id = $stmt->insert_id;
+
+        // Insert subjects for this class
+        if (!empty($subjects) && is_array($subjects)) {
+            $sub_stmt = $conn->prepare("INSERT INTO class_subjects (class_id, subject_id) VALUES (?, ?)");
+            foreach ($subjects as $sub_id) {
+                $sub_id = intval($sub_id);
+                if ($sub_id > 0) {
+                    $sub_stmt->bind_param("ii", $class_id, $sub_id);
+                    $sub_stmt->execute();
+                }
+            }
+            $sub_stmt->close();
+        }
+
+        $_SESSION['success'] = "Class '$name' added successfully with " . count($subjects) . " subjects!";
         $stmt->close();
         header("Location: index.php");
         exit();
