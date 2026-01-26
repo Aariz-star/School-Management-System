@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             (student_id, subject_id, score, term)
             VALUES (?, ?, ?, ?)
         ");
-        $stmt->bind_param("iis", $student_id, $subject_id, $score, $term);
+        $stmt->bind_param("iiis", $student_id, $subject_id, $score, $term);
         
         if ($stmt->execute()) {
             $_SESSION['success'] = "✓ Grades entered successfully!";

@@ -37,8 +37,8 @@ include 'config.php';
         <div class="header-overlay">
             <h1>Ideal Model School</h1>
             <p>Student Management System</p>
+            <button class="menu-toggle" onclick="toggleSidebar()">Dashboard</button>
         </div>
-        <button class="menu-toggle" onclick="toggleSidebar()">Dashboard</button>
     </header>
 
     <!-- Sidebar Navigation -->
@@ -134,20 +134,20 @@ include 'config.php';
             <!-- ──────────────────────────────────────────────── -->
             <!-- SUBJECTS MANAGEMENT SECTION                      -->
             <!-- ──────────────────────────────────────────────── -->
-            <div style="background: rgba(255, 255, 255, 0.03); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid rgba(0, 212, 255, 0.1);">
+            <div class="management-section">
                 <h3 style="color: #00d4ff; margin-bottom: 1rem; border-bottom: 1px solid #333; padding-bottom: 0.5rem;">Subject Management</h3>
                 
                 <!-- Add Subject -->
                 <form action="add_subject.php" method="post" style="margin-bottom: 1.5rem;">
-                    <div class="form-grid" style="grid-template-columns: 2fr 1fr; gap: 1rem; align-items: end;">
+                    <div class="form-grid-inline">
                         <input type="text" name="subject_name" placeholder="New Subject Name (e.g. Computer Science)" required>
-                        <button class="submit-btn" type="submit" style="margin-top: 0;">Add Subject</button>
+                        <button class="submit-btn" type="submit">Add Subject</button>
                     </div>
                 </form>
 
                 <!-- Delete Subject -->
                 <form action="delete_subject.php" method="post" onsubmit="return confirm('⚠️ WARNING: Delete this subject?\n\nThis will remove it from ALL classes and teachers.');">
-                    <div class="form-grid" style="grid-template-columns: 2fr 1fr; gap: 1rem; align-items: end;">
+                    <div class="form-grid-inline">
                         <select name="subject_id" required>
                             <option value="">Select Subject to Delete</option>
                             <?php
@@ -157,7 +157,7 @@ include 'config.php';
                             }
                             ?>
                         </select>
-                        <button class="submit-btn" type="submit" style="margin-top: 0; background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%); border-color: #ff4444;">Delete Subject</button>
+                        <button class="submit-btn" type="submit" style="background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%); border-color: #ff4444;">Delete Subject</button>
                     </div>
                 </form>
             </div>
@@ -393,14 +393,14 @@ include 'config.php';
             <tbody>
             <?php while($row = $result->fetch_assoc()): ?>
                 <tr>
-                    <td><?= $row['id'] ?></td>
-                    <td><?= htmlspecialchars($row['full_name']) ?></td>
-                    <td><?= htmlspecialchars($row['class_name'] ?? '-') ?></td>
-                    <td><?= htmlspecialchars($row['guardian_name'] ?? 'N/A') ?></td>
-                    <td><?= htmlspecialchars($row['guardian_contact'] ?? 'N/A') ?></td>
-                    <td><?= htmlspecialchars($row['email']) ?></td>
-                    <td><?= $row['adm_date'] ?></td>
-                    <td>
+                    <td data-label="ID"><?= $row['id'] ?></td>
+                    <td data-label="Name"><?= htmlspecialchars($row['full_name']) ?></td>
+                    <td data-label="Class"><?= htmlspecialchars($row['class_name'] ?? '-') ?></td>
+                    <td data-label="Guardian"><?= htmlspecialchars($row['guardian_name'] ?? 'N/A') ?></td>
+                    <td data-label="Contact"><?= htmlspecialchars($row['guardian_contact'] ?? 'N/A') ?></td>
+                    <td data-label="Email"><?= htmlspecialchars($row['email']) ?></td>
+                    <td data-label="Admission"><?= $row['adm_date'] ?></td>
+                    <td data-label="Actions">
                                 <a href="student_edit.php?id=<?= $row['id'] ?>" class="action-btn edit">Edit</a>
                                 <button type="button" data-id="<?= $row['id'] ?>" data-type="student" class="action-btn delete delete-btn">Delete</button>
                     </td>
@@ -448,14 +448,14 @@ include 'config.php';
             <tbody>
             <?php while($row = $result->fetch_assoc()): ?>
                 <tr>
-                    <td><?= $row['id'] ?></td>
-                    <td><?= htmlspecialchars($row['name']) ?></td>
-                    <td><?= htmlspecialchars($row['father_name']) ?></td>
-                    <td><?= htmlspecialchars($row['phone']) ?></td>
-                    <td><?= htmlspecialchars($row['email']) ?></td>
-                    <td>Rs. <?= number_format($row['salary'], 2) ?></td>
-                    <td>Rs. <?= number_format($row['remaining_payment'], 2) ?></td>
-                    <td>
+                    <td data-label="ID"><?= $row['id'] ?></td>
+                    <td data-label="Name"><?= htmlspecialchars($row['name']) ?></td>
+                    <td data-label="Father Name"><?= htmlspecialchars($row['father_name']) ?></td>
+                    <td data-label="Phone"><?= htmlspecialchars($row['phone']) ?></td>
+                    <td data-label="Email"><?= htmlspecialchars($row['email']) ?></td>
+                    <td data-label="Salary">Rs. <?= number_format($row['salary'], 2) ?></td>
+                    <td data-label="Remaining">Rs. <?= number_format($row['remaining_payment'], 2) ?></td>
+                    <td data-label="Subjects">
                         <?php
                         // Get subjects for this teacher
                         $subject_sql = "SELECT s.name FROM subjects s
@@ -475,7 +475,7 @@ include 'config.php';
                         }
                         ?>
                     </td>
-                    <td>
+                    <td data-label="Actions">
                                 <a href="teacher_edit.php?id=<?= $row['id'] ?>" class="action-btn edit">Edit</a>
                                 <button type="button" data-id="<?= $row['id'] ?>" data-type="teacher" class="action-btn delete delete-btn">Delete</button>
                     </td>

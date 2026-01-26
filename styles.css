@@ -67,7 +67,7 @@ body {
     background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #00d4ff 100%);
     color: white;
     padding: 4rem 2rem;
-    text-align: center;
+    text-align: left;
     box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
     position: relative;
     overflow: hidden;
@@ -107,9 +107,9 @@ body {
 
 /* Menu Toggle Button */
 .menu-toggle {
-    position: absolute;
-    top: 30px;
-    left: 30px;
+    position: relative;
+    margin-top: 1.5rem;
+    display: inline-block;
     background: rgba(0, 212, 255, 0.1);
     border: 1px solid #00d4ff;
     color: #00d4ff;
@@ -467,6 +467,27 @@ body {
     border: 1px solid rgba(0, 212, 255, 0.2);
 }
 
+/* Management Section (Classes & Subjects) */
+.management-section {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+/* Inline Grid for Subject Forms */
+.form-grid-inline {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+    align-items: end;
+}
+
+.form-grid-inline .submit-btn {
+    margin-top: 0;
+}
+
 .students-table th,
 .students-table td {
     padding: 1rem 1.2rem;
@@ -533,6 +554,10 @@ body {
     .header {
         padding: 2.5rem 1.5rem;
     }
+    
+    .menu-toggle {
+        margin-top: 1rem;
+    }
 
     .header h1 {
         font-size: 2rem;
@@ -561,6 +586,14 @@ body {
         gap: 1rem;
     }
 
+    .form-grid-inline {
+        grid-template-columns: 1fr;
+    }
+
+    .form-grid-inline .submit-btn {
+        margin-top: 1rem;
+    }
+
     .form-buttons {
         flex-direction: column;
     }
@@ -587,6 +620,47 @@ body {
         padding: 0.5rem 0.8rem;
         font-size: 0.75rem;
         margin-right: 0.3rem;
+    }
+    
+    /* Mobile Table - Card View to prevent horizontal scroll */
+    .students-table thead {
+        display: none;
+    }
+    
+    .students-table, .students-table tbody, .students-table tr, .students-table td {
+        display: block;
+        width: 100%;
+    }
+    
+    .students-table tr {
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(0, 212, 255, 0.2);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.02);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    
+    .students-table td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        min-height: 40px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+    }
+    
+    .students-table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 1rem;
+        width: 40%;
+        text-align: left;
+        font-weight: 700;
+        color: #00d4ff;
+        text-transform: uppercase;
+        font-size: 0.75rem;
     }
 }
 
@@ -631,6 +705,10 @@ body {
     .action-btn {
         padding: 0.4rem 0.6rem;
         font-size: 0.7rem;
+    }
+    
+    .management-section {
+        padding: 1rem;
     }
 }
 
