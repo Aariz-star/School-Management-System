@@ -9,162 +9,188 @@ function toggleSidebar() {
 }
 
 /**
- * Toggle Teachers List Visibility
- */
-function toggleTeachersList() {
-    const container = document.getElementById('teachers-list-container');
-    const button = event?.target || document.activeElement;
-    
-    if (container.classList.contains('show')) {
-        container.classList.remove('show');
-        button.textContent = 'Show All Teachers';
-        button.style.backgroundColor = '';
-    } else {
-        container.classList.add('show');
-        button.textContent = 'Hide Teachers';
-        button.style.backgroundColor = '#d63031';
-    }
-}
-
-/**
- * Show/Hide Form Based on Tab Click
- * When user clicks a navigation button, show that form and hide others
+ * Show Specific Form/Section
  */
 function showForm(formId) {
-    // Get all forms
-    const forms = document.querySelectorAll('.form-content');
-    
-    // Get all nav buttons
-    const navBtns = document.querySelectorAll('.nav-btn');
-    
     // Hide all forms
-    forms.forEach(form => {
-        form.classList.remove('active');
-    });
-    
-    // Remove active class from all buttons
-    navBtns.forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // Show the selected form
+    const forms = document.querySelectorAll('.form-content');
+    forms.forEach(form => form.classList.remove('active'));
+
+    // Show selected form
     const selectedForm = document.getElementById(formId);
     if (selectedForm) {
         selectedForm.classList.add('active');
     }
+
+    // Update Active Button State
+    const navBtns = document.querySelectorAll('.nav-btn');
+    navBtns.forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.querySelector(`.nav-btn[onclick*="showForm('${formId}')"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
     
-    // Add active class to clicked button
-    event.target.classList.add('active');
-    
-    // Smooth scroll to form (optional)
-    selectedForm?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Close sidebar on mobile if open
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('active')) {
+        toggleSidebar();
+    }
 }
 
 /**
- * Auto-hide notifications after 5 seconds
+ * Toggle Sub-Sections in Add Class Form
  */
+function toggleSubSection(sectionId) {
+    // Hide all sub-sections
+    const sections = document.querySelectorAll('.sub-section');
+    sections.forEach(sec => sec.style.display = 'none');
+
+    // Show the selected one
+    const target = document.getElementById(sectionId);
+    if (target) {
+        target.style.display = 'block';
+    }
+}
+
+/**
+ * Toggle Book Input in Add Class Form
+ */
+function toggleBookInput(checkbox) {
+    const input = checkbox.closest('.subject-item').querySelector('.book-input');
+    input.style.display = checkbox.checked ? 'block' : 'none';
+}
+
+/**
+ * Load Grades via AJAX
+ */
+function loadGrades(prefix, mode = 'edit') {
+    const classId = document.getElementById(prefix + '_class_select').value;
+    const subjectSelect = document.getElementById(prefix + '_subject_select');
+    const subjectId = subjectSelect ? subjectSelect.value : 0;
+    const term = document.getElementById(prefix + '_term_input').value;
+    
+    if(!classId) {
+        return;
+    }
+
+    // Update hidden inputs for form submission
+    if (mode === 'edit') {
+        const hClassId = document.getElementById(prefix + '_h_class_id');
+        const hSubjectId = document.getElementById(prefix + '_h_subject_id');
+        const hTerm = document.getElementById(prefix + '_h_term');
+
+        if(hClassId) hClassId.value = classId;
+        if(hSubjectId) hSubjectId.value = subjectId;
+        if(hTerm) hTerm.value = term;
+    }
+
+    // Fetch data via AJAX
+    fetch(`fetch_grades.php?class_id=${classId}&subject_id=${subjectId}&term=${encodeURIComponent(term)}&mode=${mode}`)
+        .then(response => response.text())
+        .then(html => {
+            const tbody = document.getElementById(prefix + '_grade_table_body');
+            if(tbody) tbody.innerHTML = html;
+            // Show submit button if we have results
+            const btn = document.getElementById(prefix + '_grade_submit_btn');
+            if(btn) btn.style.display = 'block';
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+/**
+ * Redirect Helpers
+ */
+function filterAttendanceByClass(classId) {
+    const page = window.location.pathname.split("/").pop();
+    window.location.href = page + '?attendance_class_id=' + classId;
+}
+
+function filterGradeByClass(classId, section) {
+    const page = window.location.pathname.split("/").pop();
+    window.location.href = page + '?grade_class_id=' + classId + '&grade_section=' + section;
+}
+
+function filterFeeByClass(classId) {
+    const page = window.location.pathname.split("/").pop();
+    window.location.href = page + '?fee_class_id=' + classId;
+}
+
+function updateAttendanceDate(classId, date) {
+    const page = window.location.pathname.split("/").pop();
+    window.location.href = page + '?attendance_class_id=' + classId + '&attendance_date=' + date;
+}
+
+/**
+ * Update Subjects Dropdown via AJAX (Prevents Page Refresh)
+ */
+function updateSubjects(classId, prefix) {
+    const subjectSelect = document.getElementById(prefix + '_subject_select');
+    const gradeTable = document.getElementById(prefix + '_grade_table_body');
+    const submitBtn = document.getElementById(prefix + '_grade_submit_btn');
+    
+    // Reset UI
+    if (subjectSelect) subjectSelect.innerHTML = '<option value="">Loading...</option>';
+    if (gradeTable) gradeTable.innerHTML = '';
+    if (submitBtn) submitBtn.style.display = 'none';
+
+    if (!classId) {
+        if (subjectSelect) subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
+        return;
+    }
+
+    fetch(`fetch_subjects.php?class_id=${classId}`)
+        .then(response => response.text())
+        .then(html => {
+            if (subjectSelect) subjectSelect.innerHTML = html;
+        })
+        .catch(err => console.error('Error loading subjects:', err));
+}
+
+// Event Listeners for URL Parameters
 document.addEventListener('DOMContentLoaded', function() {
-    const notification = document.getElementById('notification');
+    const urlParams = new URLSearchParams(window.location.search);
     
-    if (notification) {
-        setTimeout(function() {
-            notification.style.animation = 'slideOutRight 0.5s ease-out forwards';
-            setTimeout(function() {
-                notification.remove();
-            }, 500);
-        }, 5000); // Hide after 5 seconds
+    if (urlParams.has('attendance_class_id')) {
+        showForm('attendance');
     }
     
-    // Form submission - optional client-side validation
-    const forms = document.querySelectorAll('form');
-    forms.forEach(form => {
-        form.addEventListener('submit', function(e) {
-            // Uncomment below if you want to add custom validation
-            // if (!validateForm(this)) {
-            //     e.preventDefault();
-            // }
-        });
+    if (urlParams.has('grade_class_id')) {
+        showForm('grade');
+    }
+    
+    if (urlParams.has('fee_class_id')) {
+        showForm('fee');
+    }
+    
+    if (urlParams.has('section')) {
+        showForm(urlParams.get('section'));
+    }
+
+    const gradeSection = urlParams.get('grade_section');
+    if (gradeSection) {
+        toggleSubSection('sub_' + gradeSection + '_grades');
+    }
+
+    // Disable autocomplete on all forms to prevent suggestions
+    document.querySelectorAll('form').forEach(form => {
+        form.setAttribute('autocomplete', 'off');
     });
 });
 
-/**
- * Create and show a notification (used by AJAX flows)
- */
-function showNotification(message, type = 'success') {
-    // Remove any existing notification
-    const existing = document.getElementById('notification');
-    if (existing) existing.remove();
+function printAllDMCs() {
+    const classId = document.getElementById('view_class_select').value;
+    const term = document.getElementById('view_term_input').value;
 
-    const div = document.createElement('div');
-    div.id = 'notification';
-    div.className = 'notification ' + (type === 'error' ? 'notification-error' : 'notification-success');
-    div.innerHTML = message;
-    document.body.insertBefore(div, document.body.firstChild);
-
-    // Auto-hide after 5s
-    setTimeout(function() {
-        div.style.animation = 'slideOutRight 0.5s ease-out forwards';
-        setTimeout(function() { div.remove(); }, 500);
-    }, 5000);
-}
-
-/**
- * Handle delete button clicks via event delegation
- */
-document.addEventListener('click', function(e) {
-    const btn = e.target.closest('.delete-btn');
-    if (!btn) return;
-    e.preventDefault();
-
-    const id = btn.getAttribute('data-id');
-    const type = btn.getAttribute('data-type');
-    if (!id || !type) return;
-
-    const nameCell = btn.closest('tr')?.querySelector('td:nth-child(2)');
-    const name = nameCell ? nameCell.textContent.trim() : '';
-
-    if (!confirm(`Delete ${type} ${name} ?`)) return;
-
-    const endpoint = type === 'student' ? 'student_delete.php' : 'teacher_delete.php';
-
-    // Use FormData for POST
-    const data = new FormData();
-    data.append('id', id);
-
-    fetch(endpoint, { method: 'POST', body: data })
-    .then(resp => resp.json())
-    .then(json => {
-        if (json.success) {
-            // remove row
-            const row = btn.closest('tr');
-            if (row) row.remove();
-            showNotification(json.message || 'Deleted successfully', 'success');
-        } else {
-            showNotification(json.message || 'Delete failed', 'error');
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        showNotification('Network or server error', 'error');
-    });
-});
-
-/**
- * Optional: Client-side form validation
- * Uncomment and customize as needed
- */
-/*
-function validateForm(form) {
-    const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
-    
-    for (let input of inputs) {
-        if (!input.value.trim()) {
-            alert('Please fill in all required fields!');
-            input.focus();
-            return false;
-        }
+    if (!classId) {
+        alert("Please select a class first.");
+        return;
     }
-    
-    return true;
+    if (!term) {
+        alert("Please enter a term.");
+        return;
+    }
+
+    if (confirm("Are you sure you want to print DMCs for all students in this class?")) {
+        window.open(`print_all_dmcs.php?class_id=${classId}&term=${encodeURIComponent(term)}`, '_blank');
+    }
 }
-*/

@@ -1,0 +1,24 @@
+/* Teacher Dashboard Specific Styles */
+.dashboard-table {
+    margin-top: 1rem;
+}
+
+.no-assignments {
+    color: #999;
+    font-style: italic;
+    padding: 1rem;
+}
+
+.attendance-header {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.highlight-text {
+    color: #00d4ff;
+}

@@ -7,6 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $full_name      = trim($_POST['full_name'] ?? '');
     $admission_date = $_POST['admission_date'] ?? '';
+    $dob            = $_POST['dob'] ?? '';
     $email          = trim($_POST['email'] ?? '');
     $contact        = trim($_POST['contact_number'] ?? '');
     $class_id       = (int)($_POST['class_id'] ?? 0);
@@ -22,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($full_name))      $errors[] = "Full name is required.";
     if (empty($admission_date)) $errors[] = "Admission date is required.";
+    if (empty($dob))            $errors[] = "Date of Birth is required.";
     if (empty($g_name))         $errors[] = "Guardian name is required.";
     if (empty($g_contact))      $errors[] = "Guardian contact is required.";
     if ($class_id <= 0)         $errors[] = "Please select a class.";
@@ -42,11 +44,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 2. Insert Student linked to Guardian
         $stmt = $conn->prepare("
             INSERT INTO students
-            (full_name, admission_date, email, contact_number, class_id, guardian_id)
-            VALUES (?, ?, ?, ?, ?, ?)
+            (full_name, admission_date, dob, email, contact_number, class_id, guardian_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
         
-        $stmt->bind_param("ssssii", $full_name, $admission_date, $email, $contact, $class_id, $guardian_id);
+        $stmt->bind_param("sssssii", $full_name, $admission_date, $dob, $email, $contact, $class_id, $guardian_id);
 
         if ($stmt->execute()) {
             $_SESSION['success'] = "✓ Student registered successfully! ID: " . $conn->insert_id;

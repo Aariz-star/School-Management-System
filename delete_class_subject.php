@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($class_id <= 0 || $subject_id <= 0) {
         $_SESSION['error'] = "Please select both a class and a subject.";
-        header("Location: index.php");
+        header("Location: index.php?section=add_class");
         exit();
     }
 
@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     $stmt->close();
-    header("Location: index.php");
+    header("Location: index.php?section=add_class");
     exit();
 }
 ?>

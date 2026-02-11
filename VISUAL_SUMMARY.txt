@@ -1,8 +1,8 @@
 # CMS System - Visual Summary
 
-## What Your Forms Look Like
+## Dashboard Overview
 
-### Navigation Bar
+### Admin Dashboard (index.php)
 ```
 ┌─────────────────────────────────────────────────────┐
 │  🎓 Ideal Model School - Student Management System  │
@@ -10,9 +10,28 @@
 └─────────────────────────────────────────────────────┘
 
 ┌──────────────┬──────────────┬──────────────┬──────────────┬──────────────┐
-│ 📝 Student   │ 👨‍🏫 Teacher    │ ✓ Attendance │ 📊 Grades    │ 💰 Fees      │
-│ Registration │ Assignments  │              │ Entry        │ Management   │
+│ 📝 Student   │ ➕ Add       │ 📚 Classes & │ 👨‍🏫 Teacher    │ 💰 Fees      │
+│ Registration │ Teacher      │ Subjects     │ Assignments  │ Management   │
 └──────────────┴──────────────┴──────────────┴──────────────┴──────────────┘
+┌──────────────┬──────────────┐
+│ ✓ Attendance │ 📊 Grades    │
+└──────────────┴──────────────┘
+```
+
+### Teacher Dashboard (teacher_dashboard.php)
+```
+┌──────────────┬──────────────┬──────────────┐
+│ 🏠 My        │ ✓ Attendance │ 📊 Grades    │
+│ Dashboard    │              │              │
+└──────────────┴──────────────┴──────────────┘
+```
+
+### Student Dashboard (student_dashboard.php)
+```
+┌──────────────┐
+│ 🏠 My        │
+│ Dashboard    │
+└──────────────┘
 ```
 
 ### Student Registration Form
@@ -107,17 +126,35 @@ Auto-hides After 5 Seconds
 ```
 CMS/
 │
-├── 📄 index.php                    ← Main page
+├── 📄 index.php                    ← Admin Dashboard
+├── 📄 teacher_dashboard.php        ← Teacher Dashboard
+├── 📄 student_dashboard.php        ← Student Dashboard
+├── 📄 login.php                    ← Login Page
+├── 📄 logout.php                   ← Logout Handler
 ├── 📄 config.php                   ← Database setup
 ├── 📄 script.js                    ← Form interactivity
 ├── 📄 styles.css                   ← All styling
 │
+├── 🎨 Teacher Dashboard Components
+│   ├── teacher_dashboard_logic.php ← PHP Logic
+│   ├── teacher_dashboard.css       ← Specific Styles
+│   └── teacher_dashboard.js        ← Specific Scripts
+│
 ├── 🔧 Backend Files (Form Processing)
 │   ├── student_register.php        ← Student form handler
-│   ├── teacher_assign.php          ← Teacher form handler
+│   ├── add_teacher.php             ← Add teacher handler
+│   ├── teacher_assign.php          ← Teacher assignment handler
 │   ├── attendance_record.php       ← Attendance form handler
 │   ├── grade_entry.php             ← Grade form handler
 │   └── fee_management.php          ← Fee form handler
+│
+├── 🔄 AJAX & Helpers
+│   ├── fetch_grades.php            ← Load grades dynamically
+│   ├── fetch_grades_inline.php     ← Inline grade helper
+│   ├── fetch_subjects.php          ← Load subjects dynamically
+│   ├── view_dmc.php                ← Detailed Marks Certificate
+│   ├── print_all_dmcs.php          ← Bulk Print Utility
+│   └── teachers_list.php           ← Teachers Directory
 │
 ├── 📚 Documentation
 │   ├── README.md                   ← This overview
@@ -320,25 +357,33 @@ JavaScript Auto-hides Message (5 seconds)
 
 | Form | Fields | Action | Table | Validates |
 |------|--------|--------|-------|-----------|
-| Student | 6 | student_register.php | students | Email unique |
-| Teacher | 4 | teacher_assign.php | teacher_assignments | All required |
+| Student | 7 | student_register.php | students | Email unique |
+| Teacher | 6 | add_teacher.php | teachers | Email unique |
 | Attendance | 4 | attendance_record.php | attendance | Status valid |
 | Grades | 6 | grade_entry.php | grades | Marks range |
-| Fees | 6 | fee_management.php | fee_management | Amount > 0 |
+| Fees | 6 | fee_management.php | fees | Amount > 0 |
+| Classes | 3 | add_classes.php | classes | Unique name |
+| Subjects | 1 | add_subject.php | subjects | Unique name |
 
 ---
 
 ## Key Features Implemented
 
-✅ **Frontend Magic**
-   - Form switching with 1 JavaScript function
+✅ **Role-Based Access Control**
+   - Admin: Full control (Fees, Registration, Classes)
+   - Teacher: Attendance, Grades, Schedule
+   - Student: View Grades, View Attendance
+
+✅ **Dynamic Frontend**
+   - AJAX-based Subject Loading (No refresh)
+   - AJAX-based Grade Loading
    - CSS handles visibility
    - Smooth animations
 
-✅ **Backend Power**
-   - Data validation
-   - Database operations
-   - Error handling
+✅ **Advanced Reporting**
+   - Detailed Marks Certificate (DMC) Generation
+   - Bulk Printing for Admins
+   - Percentage Calculation
 
 ✅ **Beautiful Design**
    - Black theme with cyan accents

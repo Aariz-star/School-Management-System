@@ -173,6 +173,24 @@ body {
     left: 0;
 }
 
+/* Sidebar Scrollbar Styling */
+.nav-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.nav-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.nav-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 212, 255, 0.2);
+    border-radius: 3px;
+}
+
+.nav-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 212, 255, 0.5);
+}
+
 .sidebar-header {
     display: flex;
     justify-content: space-between;
@@ -218,6 +236,8 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     position: relative;
+    text-decoration: none;
+    display: block;
 }
 
 .nav-btn::before {
@@ -476,12 +496,28 @@ body {
     border: 1px solid rgba(0, 212, 255, 0.1);
 }
 
+/* Sub Navigation Grid */
+.sub-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.sub-section {
+    animation: fadeIn 0.3s ease-out;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 /* Inline Grid for Subject Forms */
 .form-grid-inline {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr auto;
     gap: 1rem;
-    align-items: end;
+    align-items: center;
 }
 
 .form-grid-inline .submit-btn {
@@ -503,6 +539,12 @@ body {
     font-size: 0.85rem;
     letter-spacing: 1px;
     border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+}
+
+/* Attendance Radio Buttons */
+.students-table input[type="radio"] {
+    transform: scale(1.3);
+    margin-right: 6px;
 }
 
 .students-table td {
@@ -592,6 +634,10 @@ body {
 
     .form-grid-inline .submit-btn {
         margin-top: 1rem;
+    }
+    
+    .sub-nav-grid {
+        grid-template-columns: 1fr;
     }
 
     .form-buttons {
@@ -737,7 +783,7 @@ body {
 /* Subjects Grid */
 .subjects-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 1rem;
     padding: 1rem;
     background: rgba(255, 255, 255, 0.05);
@@ -756,6 +802,20 @@ body {
 .subject-checkbox-label input[type="checkbox"] {
     margin-right: 0.5rem;
     cursor: pointer;
+}
+
+.subject-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.book-input {
+    display: none;
+    margin-top: 0.5rem;
+    padding: 0.4rem;
+    font-size: 0.85rem;
+    width: 100%;
+    border: 1px solid rgba(0, 212, 255, 0.3);
 }
 
 /* No Subjects Message */
@@ -802,3 +862,48 @@ body {
 .teachers-list-hidden.show {
     display: block;
 }
+
+/* New Utility Classes from Inline Styles */
+.welcome-msg { margin-top: 10px; font-size: 0.9rem; color: #00d4ff; }
+.logout-btn { margin-top: auto; background: rgba(255, 68, 68, 0.1); color: #ff4444; border: 1px solid #ff4444; }
+.guardian-address { min-height: 50px; }
+.section-heading { color: #00d4ff; margin-bottom: 1rem; border-bottom: 1px solid #333; padding-bottom: 0.5rem; }
+.sub-heading { color: #e0e0e0; margin-bottom: 0.5rem; font-size: 0.9rem; text-transform: uppercase; }
+.section-divider { margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; }
+.section-divider-top { margin-bottom: 3rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; }
+.warning-heading { color: #ff4444; margin-bottom: 0.5rem; font-size: 0.9rem; text-transform: uppercase; margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; }
+.warning-select { border-color: #ff4444; }
+.btn-danger { background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%); border-color: #ff4444; }
+.helper-text { color: #999; font-size: 0.9rem; margin-bottom: 1rem; }
+.current-masters-section { margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; }
+.current-masters-table { margin-top: 1rem; }
+.not-assigned { color:#666; }
+.master-msg { color:#00d4ff; margin-bottom:1rem; }
+.filter-container { margin-bottom: 1.5rem; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; }
+.filter-label { color: #00d4ff; display: block; margin-bottom: 0.5rem; }
+.attendance-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.attendance-header h3 { margin: 0; color: #e0e0e0; }
+.highlight-text { color: #00d4ff; }
+.date-input-auto { width: auto; padding: 0.5rem; }
+.table-no-margin { margin-top: 0; }
+.status-cell { white-space: nowrap; }
+.radio-label-present { margin-right: 10px; cursor: pointer; color: #2ecc71; }
+.radio-label-absent { cursor: pointer; color: #ff6b6b; }
+.admin-msg { color: #999; text-align: center; padding: 2rem; }
+.access-denied { color: #ff6b6b; padding: 1rem; border: 1px solid #ff6b6b; border-radius: 8px; background: rgba(255, 107, 107, 0.1); }
+.filter-ui-container { background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid rgba(0, 212, 255, 0.1); }
+.btn-full-width { width:100%; }
+.grade-input { width: 80px; padding: 0.5rem; border: 1px solid #333; border-radius: 4px; background: #1a1a1a; color: #fff; }
+.grade-submit-btn { margin-top: 2rem; }
+.fee-label { color: #00d4ff; font-size: 0.9rem; }
+.fee-filter-container { margin-bottom: 0.5rem; }
+.dashboard-heading { color: #00d4ff; margin-top: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+.dashboard-table { margin-top:15px; }
+.no-assignments { margin-top: 15px; color: #999; }
+.dashboard-heading-secondary { color: #00d4ff; margin-top: 30px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+.dashboard-subjects-grid { margin-top:15px; }
+.subject-tag { background: rgba(0, 212, 255, 0.1); color: #00d4ff; padding: 5px 10px; border-radius: 4px; border: 1px solid rgba(0, 212, 255, 0.3); margin-right: 10px; display: inline-block; margin-bottom: 10px; }
+.student-heading { color: #e0e0e0; }
+.student-subheading { color: #00d4ff; margin-top: 20px; }
+.student-table { margin-top:10px; }
+.student-subheading-secondary { color: #00d4ff; margin-top: 30px; }

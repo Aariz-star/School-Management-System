@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($id <= 0) {
         $_SESSION['error'] = "Invalid subject selected.";
-        header("Location: index.php");
+        header("Location: index.php?section=add_class");
         exit();
     }
 
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     $stmt->close();
-    header("Location: index.php");
+    header("Location: index.php?section=add_class");
     exit();
 }
 ?>
