@@ -1,0 +1,145 @@
+/* Global Report Styles */
+* { box-sizing: border-box; }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #fff;
+    color: #000;
+    padding: 20px;
+}
+
+/* DMC Container (view_dmc.php) */
+.dmc-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #1a1a1a; /* Dark theme for view mode */
+    color: #e0e0e0;
+    padding: 2rem;
+    border: 1px solid #333;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+/* Receipt Container (generate_receipt.php) */
+.receipt-container {
+    max-width: 700px; 
+    margin: 0 auto; 
+    background: #fff; 
+    padding: 40px;
+    border: 1px solid #ddd; 
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    color: #000;
+}
+
+/* Print Page (print_all_dmcs.php) */
+.dmc-page {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    border: 1px solid #ccc;
+    page-break-after: always;
+    box-sizing: border-box;
+    background: #fff;
+    color: #000;
+}
+
+/* Common Header */
+.header-section {
+    text-align: center;
+    border-bottom: 2px solid #333;
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+}
+.dmc-container .header-section { border-bottom-color: #00d4ff; }
+.header-section h1 { margin: 0; text-transform: uppercase; letter-spacing: 2px; }
+.dmc-container .header-section h1 { color: #00d4ff; }
+.header-section p { margin: 5px 0 0; color: #666; }
+
+/* Info Grids */
+.info-grid, .student-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+.info-item label, .info-group label { display: block; font-weight: bold; font-size: 0.9rem; }
+.dmc-container .info-group label { color: #00d4ff; }
+.info-item span, .info-group span { display: block; font-size: 1.1rem; }
+
+/* Tables */
+table, .marks-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+th { background: #f9f9f9; font-weight: bold; }
+
+/* Dark Theme Table Overrides */
+.dmc-container .marks-table th, .dmc-container .marks-table td { border-color: #333; }
+.dmc-container .marks-table th { background: #252525; color: #00d4ff; }
+.dmc-container .marks-table td { background: #1a1a1a; }
+.dmc-container .total-row td { font-weight: bold; color: #00d4ff; background: #252525; }
+
+/* Status Badge */
+.status-badge {
+    display: inline-block; padding: 5px 10px; border-radius: 4px; font-weight: bold;
+    background: #d1fae5; color: #065f46; border: 1px solid #10b981;
+}
+
+/* Footer */
+.footer, .footer-section { text-align: center; margin-top: 50px; color: #999; font-size: 0.9rem; }
+.footer-section { display: flex; justify-content: space-between; padding-top: 1rem; }
+.signature {
+    border-top: 1px solid #666;
+    width: 200px;
+    text-align: center;
+    padding-top: 0.5rem;
+    color: #999;
+}
+
+/* Buttons */
+.print-btn, button {
+    display: block; width: 200px; margin: 20px auto; padding: 10px;
+    background: #333; color: #fff; text-align: center; text-decoration: none;
+    border-radius: 5px; cursor: pointer; border: none; font-size: 1rem;
+}
+.dmc-container .print-btn { background: linear-gradient(45deg, #00d4ff, #0056b3); width: 100%; max-width: 200px; }
+.no-print { text-align: center; padding: 20px; background: #f0f0f0; margin-bottom: 20px; }
+
+/* Print Media Query */
+@media print {
+    body { background: #fff; padding: 0; margin: 0; color: #000; }
+    .receipt-container, .dmc-container, .dmc-page { 
+        box-shadow: none; border: none; padding: 0; margin: 0; width: 100%; max-width: 100%; 
+    }
+    .print-btn, .no-print { display: none; }
+    
+    /* Force colors for print */
+    .header-section h1, .info-group label, .marks-table th, .total-row td { color: black !important; }
+    .header-section { border-bottom-color: black; }
+    .marks-table th, .marks-table td { border-color: #000; }
+}
+
+/* Responsive */
+@media screen and (max-width: 600px) {
+    body { padding: 10px; }
+    .dmc-container, .dmc-page { padding: 1rem; width: 100%; }
+    .header-section h1 { font-size: 1.4rem; }
+    .info-grid, .student-info { grid-template-columns: 1fr; gap: 0.5rem; }
+    .info-group { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 4px; }
+    .info-group label { margin-bottom: 0; font-size: 0.85rem; }
+    .info-group span { font-size: 0.95rem; text-align: right; }
+    th, td { padding: 8px 4px; font-size: 0.85rem; }
+    .footer-section { flex-direction: column; gap: 2.5rem; margin-top: 2rem; }
+    .signature { width: 80%; margin: 0 auto; }
+    .print-btn { width: 100%; max-width: none; }
+}
+
+/* Download Success Message */
+.download-success {
+    text-align: center; 
+    padding: 50px; 
+    font-family: sans-serif; 
+    color: #333;
+}
+.download-success h2 { margin-top: 0; }
+.close-btn {
+    padding: 10px 20px; cursor: pointer; background: #333; color: #fff; border: none; border-radius: 5px;
+}

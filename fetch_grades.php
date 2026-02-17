@@ -2,6 +2,10 @@
 session_start();
 include 'config.php';
 
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'teacher'])) {
+    exit;
+}
+
 $class_id = isset($_GET['class_id']) ? (int)$_GET['class_id'] : 0;
 $subject_id = isset($_GET['subject_id']) ? (int)$_GET['subject_id'] : 0;
 $term = isset($_GET['term']) ? trim($_GET['term']) : '';
@@ -18,29 +22,37 @@ $view_percentage_mode = ($mode === 'view' && $subject_id <= 0);
 if ($view_percentage_mode) {
     // Fetch students and their total score for the term
     // We will calculate percentage based on total subjects in the class
-    $sql = "SELECT s.id, s.full_name, g.guardian_name, SUM(gr.score) as total_score
+    $sql = "SELECT s.id, s.full_name, g.guardian_name, 
+            SUM(gr.score) as total_score, COUNT(gr.id) as graded_count
             FROM students s
             LEFT JOIN guardians g ON s.guardian_id = g.id
-            LEFT JOIN grades gr ON s.id = gr.student_id AND gr.term = '$term'
-            WHERE s.class_id = $class_id
+            LEFT JOIN grades gr ON s.id = gr.student_id AND gr.term = ?
+            WHERE s.class_id = ?
+            AND s.deleted_at IS NULL
             GROUP BY s.id
             ORDER BY s.full_name";
             
-    // Get total subjects count for the class to calculate max marks
-    $subj_count_res = $conn->query("SELECT COUNT(*) as cnt FROM class_subjects WHERE class_id = $class_id");
-    $total_subjects = ($subj_count_res && $row = $subj_count_res->fetch_assoc()) ? (int)$row['cnt'] : 0;
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("si", $term, $class_id);
+    $stmt->execute();
+    $res = $stmt->get_result();
 } else {
     // Fetch students and their score for a specific subject
     $sql = "SELECT s.id, s.full_name, g.guardian_name,
             gr.score as current_score
             FROM students s
             LEFT JOIN guardians g ON s.guardian_id = g.id
-            LEFT JOIN grades gr ON s.id = gr.student_id AND gr.subject_id = $subject_id AND gr.term = '$term'
-            WHERE s.class_id = $class_id
+            LEFT JOIN grades gr ON s.id = gr.student_id AND gr.subject_id = ? AND gr.term = ?
+            WHERE s.class_id = ?
+            AND s.deleted_at IS NULL
             ORDER BY s.full_name";
+            
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("isi", $subject_id, $term, $class_id);
+    $stmt->execute();
+    $res = $stmt->get_result();
 }
 
-$res = $conn->query($sql);
 $counter = 1;
 
 // Get class name for roll no generation
@@ -61,11 +73,12 @@ if ($res && $res->num_rows > 0) {
         echo "<td data-label='Roll No'><strong>$roll_no</strong></td>";
         echo "<td data-label='Name'>" . htmlspecialchars($row['full_name']) . "</td>";
         echo "<td data-label='Father Name'>" . htmlspecialchars($row['guardian_name'] ?? '-') . "</td>";
-        echo "<td data-label='Score'>";
+        echo "<td data-label='" . ($view_percentage_mode ? 'Percentage' : 'Score') . "'>";
         if ($mode === 'view') {
             if ($view_percentage_mode) {
                 $obtained = isset($row['total_score']) ? (int)$row['total_score'] : 0;
-                $max_marks = $total_subjects * 100;
+                $graded_count = isset($row['graded_count']) ? (int)$row['graded_count'] : 0;
+                $max_marks = $graded_count * 100;
                 if ($max_marks > 0) {
                     echo round(($obtained / $max_marks) * 100, 2) . "%";
                 } else {

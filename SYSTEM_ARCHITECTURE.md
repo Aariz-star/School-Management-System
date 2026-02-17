@@ -48,13 +48,19 @@ CMS/
 │   ├── teachers_list.php           # Admin view: List of all teachers
 │   └── teacher_edit.php            # Admin view: Edit teacher details
 │
+├── 📂 Student Module Components
+│   ├── student_dashboard_logic.php # Logic separation for Student Dashboard
+│   ├── student_dashboard.css       # Specific styles for Student Dashboard
+│   └── student_dashboard.js        # Specific scripts for Student Dashboard
+│
 ├── 📂 Backend Handlers (Controllers)
 │   ├── student_register.php        # Handle student registration
 │   ├── student_edit.php            # Handle student updates
-│   ├── student_delete.php          # Handle student deletion (AJAX)
+│   ├── student_delete.php          # Handle student deletion (Soft Delete/Restore)
 │   ├── add_teacher.php             # Handle teacher registration
-│   ├── teacher_delete.php          # Handle teacher deletion (AJAX)
+│   ├── teacher_delete.php          # Handle teacher deletion (Soft Delete/Restore)
 │   ├── teacher_assign.php          # Handle subject-teacher assignment
+│   ├── post_homework.php           # Handle homework creation
 │   ├── add_classes.php             # Handle creating classes
 │   ├── delete_class.php            # Handle deleting classes
 │   ├── add_subject.php             # Handle creating subjects
@@ -66,6 +72,9 @@ CMS/
 │   ├── grade_entry.php             # Handle grade submission/updates
 │   ├── fee_management.php          # Handle fee records
 │   └── create_user.php             # Utility to create login users
+│
+├── 📂 System Utilities
+│   └── db_inspector.php            # Database structure debugging tool
 │
 ├── 📂 AJAX & Data Fetchers
 │   ├── fetch_grades.php            # Returns HTML table of grades

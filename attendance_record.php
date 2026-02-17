@@ -3,7 +3,19 @@
 session_start();
 include 'config.php';
 
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'teacher'])) {
+    header("Location: login.php");
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
+    
+    // Get return_to parameter
+    $return_to = isset($_POST['return_to']) ? trim($_POST['return_to']) : 'attendance';
     
     // ────────────────────────────────────────────────────────────────
     // BULK ATTENDANCE HANDLING
@@ -14,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if (empty($date)) {
             $_SESSION['error'] = "Attendance date is required.";
-            header("Location: index.php");
+            header("Location: index.php?return_to=" . urlencode($return_to));
             exit;
         }
 
@@ -60,10 +72,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $_SESSION['success'] = $msg;
         
-        // Redirect back to the specific class and date
-        $redirect_url = "index.php";
+        // Redirect back with return_to parameter
+        $redirect_url = "index.php?return_to=" . urlencode($return_to);
         if ($class_id > 0) {
-            $redirect_url .= "?attendance_class_id=$class_id&attendance_date=$date";
+            $redirect_url .= "&attendance_class_id=$class_id&attendance_date=$date";
         }
         header("Location: $redirect_url");
         exit;
@@ -113,17 +125,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->execute()) {
             $_SESSION['success'] = "✓ Attendance recorded successfully!";
             $stmt->close();
-            header("Location: index.php");
+            header("Location: index.php?return_to=" . urlencode($return_to));
             exit;
         } else {
             $_SESSION['error'] = "✗ Database error: " . $conn->error;
             $stmt->close();
-            header("Location: index.php");
+            header("Location: index.php?return_to=" . urlencode($return_to));
             exit;
         }
     } else {
         $_SESSION['error'] = "✗ " . implode("\n✗ ", $errors);
-        header("Location: index.php");
+        header("Location: index.php?return_to=" . urlencode($return_to));
         exit;
     }
 }

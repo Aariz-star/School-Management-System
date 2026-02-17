@@ -3,6 +3,12 @@
 // Run this file in your browser (e.g., localhost/CMS/db_inspector.php)
 // Then copy the text output and paste it into the chat.
 
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: login.php");
+    exit;
+}
+
 include 'config.php';
 
 header('Content-Type: text/plain');

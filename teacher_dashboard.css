@@ -22,3 +22,88 @@
 .highlight-text {
     color: #00d4ff;
 }
+
+/* Dashboard Grid & Cards (Copied from Student Design) */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.dashboard-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 1.5rem;
+    transition: transform 0.2s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    border-color: #00d4ff;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #333;
+    padding-bottom: 0.5rem;
+}
+
+.card-header h3 {
+    margin: 0;
+    color: #00d4ff;
+    font-size: 1.2rem;
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #e0e0e0;
+}
+
+.stat-label {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.list-item {
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.list-item:last-child {
+    border-bottom: none;
+}
+
+.item-title {
+    font-weight: bold;
+    display: block;
+}
+
+.item-meta {
+    font-size: 0.85rem;
+    color: #999;
+}
+
+.empty-state {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+}
+
+/* Active Sub-Navigation Button */
+.active-sub-btn {
+    background-color: #00d4ff !important;
+    color: #000 !important;
+    border-color: #00d4ff !important;
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}

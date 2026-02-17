@@ -3,7 +3,16 @@
 session_start();
 include 'config.php';
 
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: login.php");
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
+
     $class_id = isset($_POST['class_id']) ? intval($_POST['class_id']) : 0;
     $subject_id = isset($_POST['subject_id']) ? intval($_POST['subject_id']) : 0;
     $book_name = isset($_POST['book_name']) ? trim($_POST['book_name']) : '';

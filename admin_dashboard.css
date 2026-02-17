@@ -1,0 +1,443 @@
+/* Admin Dashboard Overview Styles */
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    border-color: #00d4ff;
+}
+
+.stat-icon {
+    font-size: 1.8rem;
+    background: rgba(0, 212, 255, 0.1);
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #00d4ff;
+}
+
+.stat-info h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: #e0e0e0;
+}
+
+.stat-info p {
+    margin: 0;
+    color: #999;
+    font-size: 0.8rem;
+}
+
+/* Charts Section */
+.charts-wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.chart-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 1.5rem;
+    min-width: 0; /* Prevents grid blowout */
+}
+
+.chart-box h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #00d4ff;
+    font-size: 1.1rem;
+    border-bottom: 1px solid #333;
+    padding-bottom: 0.5rem;
+}
+
+/* Chart Container for Aspect Ratio Control */
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+/* Responsive fix for charts */
+@media (max-width: 768px) { 
+    .charts-wrapper { grid-template-columns: 1fr; } 
+    .chart-container { height: 220px; } /* Smaller height on mobile */
+    .chart-box { padding: 1rem; }
+    .stats-grid { grid-template-columns: 1fr; }
+}
+
+/* Fee Dashboard Specifics */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+.card-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #333; padding-bottom: 0.5rem;
+}
+
+/* Active Sub-Navigation Button */
+.active-sub-btn {
+    background-color: #00d4ff !important;
+    color: #000 !important;
+    border-color: #00d4ff !important;
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+/* Refactored Utility Classes */
+.cyan-label {
+    color: #00d4ff;
+    font-size: 0.85rem;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.filter-box {
+    margin-bottom: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.text-center-gray {
+    text-align: center;
+    padding: 1rem;
+    color: #999;
+}
+
+.inline-form {
+    display: inline;
+}
+
+.action-btn-delete {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+}
+
+.stat-icon-warning {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.stat-icon-success {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.stat-icon-danger {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.invoice-number-badge {
+    background: #00d4ff;
+    color: #000;
+    padding: 0.6rem;
+    border-radius: 6px;
+    margin: 0.8rem 0;
+    font-weight: bold;
+    text-align: center;
+}
+
+.invoice-number-badge p:first-child { margin: 0; font-size: 0.75rem; }
+.invoice-number-badge p:last-child { margin: 0; font-size: 1.1rem; letter-spacing: 2px; }
+
+.proof-link { color: #00d4ff; display: block; margin: 0.5rem 0; text-decoration: none; }
+
+/* Class Subjects Filter */
+.class-subjects-filter-container {
+    margin-bottom: 2rem;
+}
+
+.class-subjects-filter-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #00d4ff;
+    font-weight: 500;
+}
+
+.class-subjects-filter-select {
+    width: 100%;
+    max-width: 400px;
+    padding: 0.7rem;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 5px;
+    color: #e0e0e0;
+    font-size: 1rem;
+}
+
+/* Class Subjects Container */
+.class-subjects-container {
+    display: none !important;
+}
+
+.class-subjects-container.active {
+    display: block !important;
+}
+
+.class-subjects-add-form {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #333;
+}
+
+.add-subject-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.add-subject-form-input,
+.add-subject-form-select {
+    width: 100%;
+    padding: 0.6rem;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 5px;
+    color: #e0e0e0;
+}
+
+.add-subject-form-input::placeholder {
+    color: #666;
+}
+
+.no-class-selected-msg {
+    padding: 2rem;
+    text-align: center;
+    color: #666;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+}
+
+/* Form Labels */
+.form-label-standard {
+    color: #00d4ff;
+    font-size: 0.85rem;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.form-input-full-width {
+    width: 100%;
+}
+
+/* Sub-section Generic */
+.sub-section-hidden {
+    display: none;
+}
+
+/* Date Input Fields */
+.date-input-wrapper {
+    margin-bottom: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.date-input-label {
+    color: #00d4ff;
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+/* Grade Form Grid */
+.grade-form-grid {
+    margin-bottom: 1rem;
+}
+
+/* Print Button Styling */
+.print-dmcs-btn {
+    margin-top: 10px;
+    background: linear-gradient(45deg, #00d4ff, #0056b3);
+    color: white;
+    border: none;
+    width: 100%;
+}
+
+.print-dmcs-btn:hover {
+    background: linear-gradient(45deg, #00d4ff, #003d8a);
+}
+
+/* Fee Icons with Custom Colors */
+.stat-icon-warning {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.stat-icon-success {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.stat-icon-danger {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Payment Card Styling */
+.payment-pending-badge {
+    color: #f59e0b;
+    font-size: 0.8rem;
+}
+
+.payment-proof-link {
+    color: #00d4ff;
+    display: block;
+    margin: 0.5rem 0;
+}
+
+.payment-actions-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 1rem;
+}
+
+.payment-action-form {
+    flex: 1;
+}
+
+.payment-approve-btn {
+    background: #10b981;
+    margin: 0;
+}
+
+.payment-reject-btn {
+    background: #ef4444;
+    margin: 0;
+}
+
+/* Promote Student List Container */
+.promote-student-list {
+    margin-top: 1.5rem;
+}
+
+/* Subjects Details Table */
+.subjects-details-table {
+    background: rgba(255, 255, 255, 0.02);
+    border-collapse: collapse;
+}
+
+.subjects-details-table thead {
+    background: rgba(0, 212, 255, 0.1);
+    border-bottom: 2px solid #00d4ff;
+}
+
+.subjects-details-table th {
+    padding: 1rem;
+    text-align: left;
+    color: #00d4ff;
+    font-weight: 600;
+}
+
+.subjects-details-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #333;
+}
+
+.subjects-details-table .subject-cell {
+    color: #e0e0e0;
+}
+
+.subjects-details-table .book-cell {
+    color: #999;
+}
+
+.subjects-details-table .teacher-cell {
+    color: #a0a0a0;
+    font-size: 0.9rem;
+}
+
+.subjects-details-table .action-cell {
+    text-align: center;
+    width: 120px;
+}
+
+.btn-small {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+}
+
+/* Responsive Grid for Add Subject Form */
+@media (max-width: 1024px) {
+    .add-subject-form-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .add-subject-form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .class-subjects-filter-select {
+        max-width: 100%;
+    }
+    
+    .subjects-details-table {
+        font-size: 0.9rem;
+    }
+    
+    .subjects-details-table th,
+    .subjects-details-table td {
+        padding: 0.7rem;
+    }
+}
+
+/* Edit Invoice Tabs */
+.edit-tab {
+    position: relative;
+    color: #999;
+    transition: color 0.2s ease;
+}
+
+.edit-tab.active {
+    color: #00d4ff;
+    border-bottom: 3px solid #00d4ff;
+    padding-bottom: 0.5rem;
+}
+
+.edit-content {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -3,7 +3,16 @@
 session_start();
 include 'config.php';
 
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: login.php");
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
+
     // Get form data
     $name               = isset($_POST['name']) ? trim($_POST['name']) : '';
     $father_name        = isset($_POST['father_name']) ? trim($_POST['father_name']) : '';
@@ -16,25 +25,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validation
     if (empty($name) || empty($father_name) || empty($phone) || empty($email)) {
         $_SESSION['error'] = "All fields are required!";
-        header("Location: index.php");
+        $return_to = isset($_POST['return_to']) ? $_POST['return_to'] : 'add_teacher';
+        header("Location: index.php?return_to=" . urlencode($return_to));
         exit();
     }
     
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $_SESSION['error'] = "Invalid email format!";
-        header("Location: index.php");
+        $return_to = isset($_POST['return_to']) ? $_POST['return_to'] : 'add_teacher';
+        header("Location: index.php?return_to=" . urlencode($return_to));
         exit();
     }
     
     if (!is_numeric($salary) || $salary < 0) {
         $_SESSION['error'] = "Salary must be a valid positive number!";
-        header("Location: index.php");
+        $return_to = isset($_POST['return_to']) ? $_POST['return_to'] : 'add_teacher';
+        header("Location: index.php?return_to=" . urlencode($return_to));
         exit();
     }
     
     if (!is_numeric($remaining_payment) || $remaining_payment < 0) {
         $_SESSION['error'] = "Remaining payment must be a valid positive number!";
-        header("Location: index.php");
+        $return_to = isset($_POST['return_to']) ? $_POST['return_to'] : 'add_teacher';
+        header("Location: index.php?return_to=" . urlencode($return_to));
         exit();
     }
     
@@ -75,12 +88,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $_SESSION['success'] = "Teacher '$name' registered successfully!";
         $stmt->close();
-        header("Location: index.php");
+        $return_to = isset($_POST['return_to']) ? $_POST['return_to'] : 'add_teacher';
+        header("Location: index.php?return_to=" . urlencode($return_to));
         exit();
     } else {
         $_SESSION['error'] = "Failed to register teacher: " . $stmt->error;
         $stmt->close();
-        header("Location: index.php");
+        $return_to = isset($_POST['return_to']) ? $_POST['return_to'] : 'add_teacher';
+        header("Location: index.php?return_to=" . urlencode($return_to));
         exit();
     }
 }

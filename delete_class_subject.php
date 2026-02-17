@@ -3,7 +3,16 @@
 session_start();
 include 'config.php';
 
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: login.php");
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
+
     $class_id = isset($_POST['class_id']) ? intval($_POST['class_id']) : 0;
     $subject_id = isset($_POST['subject_id']) ? intval($_POST['subject_id']) : 0;
 
@@ -13,9 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    // Delete the link
-    $stmt = $conn->prepare("DELETE FROM class_subjects WHERE class_id = ? AND subject_id = ?");
-    $stmt->bind_param("ii", $class_id, $subject_id);
+    // Soft Delete the link
+    $stmt = $conn->prepare("UPDATE class_subjects SET deleted_at = NOW(), deleted_by = ? WHERE class_id = ? AND subject_id = ? AND deleted_at IS NULL");
+    $stmt->bind_param("iii", $_SESSION['user_id'], $class_id, $subject_id);
     
     if ($stmt->execute()) {
         if ($stmt->affected_rows > 0) {

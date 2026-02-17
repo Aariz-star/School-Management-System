@@ -2,7 +2,7 @@
 session_start();
 include 'config.php';
 
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'teacher'])) {
     exit;
 }
 
@@ -20,6 +20,8 @@ if ($class_id > 0) {
                 FROM subjects s 
                 JOIN class_subjects cs ON s.id = cs.subject_id 
                 WHERE cs.class_id = $class_id 
+                AND s.deleted_at IS NULL
+                AND cs.deleted_at IS NULL
                 ORDER BY s.name";
     } elseif ($role === 'teacher') {
         // Teacher sees only assigned subjects
@@ -27,6 +29,7 @@ if ($class_id > 0) {
                 FROM subjects s 
                 JOIN teacher_assignments ta ON s.id = ta.subject_id 
                 WHERE ta.teacher_id = $related_id AND ta.class_id = $class_id 
+                AND s.deleted_at IS NULL
                 ORDER BY s.name";
     }
 

@@ -3,7 +3,16 @@
 session_start();
 include 'config.php';
 
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: login.php");
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
 
     $full_name      = trim($_POST['full_name'] ?? '');
     $admission_date = $_POST['admission_date'] ?? '';
@@ -28,6 +37,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($g_contact))      $errors[] = "Guardian contact is required.";
     if ($class_id <= 0)         $errors[] = "Please select a class.";
 
+    // Get return_to parameter to stay on the same section
+    $return_to = isset($_POST['return_to']) ? $_POST['return_to'] : 'dashboard_view';
+    $redirect_url = "index.php?return_to=" . urlencode($return_to);
+
+    // Check for duplicate email
+    if (!empty($email)) {
+        $check = $conn->prepare("SELECT id FROM students WHERE email = ?");
+        $check->bind_param("s", $email);
+        $check->execute();
+        if ($check->get_result()->num_rows > 0) {
+            $errors[] = "A student with this email address already exists.";
+        }
+        $check->close();
+    }
+
     if (empty($errors)) {
         // 1. Insert Guardian First
         $stmt_g = $conn->prepare("INSERT INTO guardians (guardian_name, contact_number, email, address, relationship_to_student) VALUES (?, ?, ?, ?, ?)");
@@ -48,21 +72,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
         
+        if (!$stmt) {
+            $_SESSION['error'] = "Database Error: " . $conn->error . " (Hint: Check if 'dob' column exists)";
+            header("Location: index.php");
+            exit;
+        }
+        
         $stmt->bind_param("sssssii", $full_name, $admission_date, $dob, $email, $contact, $class_id, $guardian_id);
 
         if ($stmt->execute()) {
             $_SESSION['success'] = "✓ Student registered successfully! ID: " . $conn->insert_id;
             $stmt->close();
-            header("Location: index.php");
+            header("Location: " . $redirect_url);
             exit;
         } else {
             $_SESSION['error'] = "✗ Database error: " . $conn->error;
             $stmt->close();
-            header("Location: index.php");
+            header("Location: " . $redirect_url);
             exit;
         }
     } else {
         $_SESSION['error'] = "✗ " . implode("\n✗ ", $errors);
+        header("Location: " . $redirect_url);
         header("Location: index.php");
         exit;
     }

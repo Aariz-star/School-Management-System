@@ -3,7 +3,16 @@
 session_start();
 include 'config.php';
 
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'teacher'])) {
+    header("Location: login.php");
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
     
     $class_id = isset($_POST['class_id']) ? (int)$_POST['class_id'] : 0;
     $subject_id = isset($_POST['subject_id']) ? (int)$_POST['subject_id'] : 0;

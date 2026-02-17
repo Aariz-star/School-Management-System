@@ -44,9 +44,12 @@ require_once 'teacher_dashboard_logic.php';
             <button class="close-btn" onclick="toggleSidebar()">&times;</button>
         </div>
         
-        <button class="nav-btn active" onclick="showForm('teacher_view')">My Dashboard</button>
+        <button class="nav-btn active" onclick="showForm('dashboard')">Home Dashboard</button>
+        <button class="nav-btn" onclick="showForm('classes')">My Classes</button>
+        <button class="nav-btn" onclick="showForm('homework')">Homework</button>
         <button class="nav-btn" onclick="showForm('attendance')">Attendance</button>
         <button class="nav-btn" onclick="showForm('grade')">Grades</button>
+        <button class="nav-btn" onclick="showForm('timetable')">Timetable</button>
         <a href="logout.php" class="nav-btn logout-btn">Logout</a>
     </nav>
 
@@ -54,30 +57,78 @@ require_once 'teacher_dashboard_logic.php';
     <div class="container">
 
         <!-- TEACHER DASHBOARD (Landing Page) -->
-        <div id="teacher_view" class="form-content active">
-            <h2>Teacher Dashboard</h2>
+        <div id="dashboard" class="form-content active">
+            <h2>Home Dashboard</h2>
             <?php
                 if ($teacher_info) {
-                    echo "<h3 class='student-heading'>Welcome, " . htmlspecialchars($teacher_info['name']) . "</h3>";
-                    
-                    // Schedule
-                    echo "<h4 class='dashboard-heading'>My Schedule & Assignments</h4>";
-                    
-                    if ($assignments && $assignments->num_rows > 0) {
-                        echo "<table class='students-table dashboard-table'><thead><tr><th>Class</th><th>Subject</th><th>Academic Year</th></tr></thead><tbody>";
-                        while($row = $assignments->fetch_assoc()) {
-                            echo "<tr><td data-label='Class'>" . htmlspecialchars($row['class_name']) . "</td><td data-label='Subject'>" . htmlspecialchars($row['subject_name']) . "</td><td data-label='Year'>" . htmlspecialchars($row['academic_year']) . "</td></tr>";
-                        }
-                        echo "</tbody></table>";
-                    } else {
-                        echo "<p class='no-assignments'>No active class assignments found.</p>";
-                    }
+                    echo "<h3 class='student-heading'>Welcome back, " . htmlspecialchars($teacher_info['name']) . "</h3>";
                 }
+            ?>
+
+            <div class="dashboard-grid">
+                <!-- Stats Card -->
+                <div class="dashboard-card">
+                    <div class="card-header"><h3>My Classes</h3></div>
+                    <div class="stat-number" style="color: #00d4ff;">
+                        <?= $assignments ? $assignments->num_rows : 0 ?>
+                    </div>
+                    <div class="stat-label">Active Assignments</div>
+                </div>
+
+                <!-- Announcements Card -->
+                <div class="dashboard-card">
+                    <div class="card-header"><h3>Announcements</h3></div>
+                    <?php if ($announcements_res && $announcements_res->num_rows > 0): ?>
+                        <?php while($ann = $announcements_res->fetch_assoc()): ?>
+                            <div class="list-item">
+                                <span class="item-title"><?= htmlspecialchars($ann['title']) ?></span>
+                                <span class="item-meta"><?= $ann['publish_date'] ?></span>
+                            </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <p class="empty-state">No new announcements.</p>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="dashboard-card">
+                    <div class="card-header"><h3>Quick Actions</h3></div>
+                    <div class="list-item" onclick="showForm('attendance')" style="cursor:pointer;">
+                        <span class="item-title">Mark Attendance</span>
+                        <span class="item-meta">→</span>
+                    </div>
+                    <div class="list-item" onclick="showForm('grade')" style="cursor:pointer;">
+                        <span class="item-title">Enter Grades</span>
+                        <span class="item-meta">→</span>
+                    </div>
+                    <div class="list-item" onclick="showForm('homework')" style="cursor:pointer;">
+                        <span class="item-title">Post Homework</span>
+                        <span class="item-meta">→</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MY CLASSES -->
+        <div id="classes" class="form-content">
+            <h2>My Classes & Subjects</h2>
+            <?php
+            if ($assignments && $assignments->num_rows > 0) {
+                $assignments->data_seek(0); // Reset pointer
+                echo "<table class='students-table dashboard-table'><thead><tr><th>Class</th><th>Subject</th><th>Academic Year</th></tr></thead><tbody>";
+                while($row = $assignments->fetch_assoc()) {
+                    echo "<tr><td data-label='Class'>" . htmlspecialchars($row['class_name']) . "</td><td data-label='Subject'>" . htmlspecialchars($row['subject_name']) . "</td><td data-label='Year'>" . htmlspecialchars($row['academic_year']) . "</td></tr>";
+                }
+                echo "</tbody></table>";
+            } else {
+                echo "<p class='no-assignments'>No active class assignments found.</p>";
+            }
             ?>
         </div>
 
         <!-- Attendance Form -->
         <form id="attendance" class="form-content" action="attendance_record.php" method="post">
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
             <h2>Class Attendance</h2>
             <?php
             if ($target_class_id > 0) {
@@ -93,7 +144,7 @@ require_once 'teacher_dashboard_logic.php';
                         <?php
                         $counter = 1;
                         $has_existing_data = false;
-                        while($row = $attendance_students->fetch_assoc()) {
+                        if ($attendance_students) while($row = $attendance_students->fetch_assoc()) {
                             $class_num = preg_replace('/[^0-9]/', '', $target_class_name);
                             $prefix = ($class_num !== '') ? $class_num : $target_class_id;
                             $roll_no = $prefix . str_pad($counter++, 2, '0', STR_PAD_LEFT);
@@ -144,6 +195,7 @@ require_once 'teacher_dashboard_logic.php';
             <div id="sub_enter_grades" class="sub-section" style="display: <?= $active_grade_section == 'enter' ? 'block' : 'none' ?>;">
                 <h3>Enter Grades</h3>
                 <form action="grade_entry.php" method="post">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                     <input type="hidden" name="grade_section" value="enter">
                     <div class="filter-ui-container">
                         <div class="form-grid" style="margin-bottom: 1rem;">
@@ -165,6 +217,7 @@ require_once 'teacher_dashboard_logic.php';
             <div id="sub_update_grades" class="sub-section" style="display: <?= $active_grade_section == 'update' ? 'block' : 'none' ?>;">
                 <h3>Update Grades</h3>
                 <form action="grade_entry.php" method="post">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                     <input type="hidden" name="grade_section" value="update">
                     <div class="filter-ui-container">
                         <div class="form-grid" style="margin-bottom: 1rem;">
@@ -194,6 +247,86 @@ require_once 'teacher_dashboard_logic.php';
                 </div>
                 <table class="students-table table-no-margin"><thead><tr><th>Roll No</th><th>Name</th><th>Father Name</th><th>Percentage</th><th>DMC</th></tr></thead><tbody id="view_grade_table_body"></tbody></table>
             </div>
+        </div>
+
+        <!-- HOMEWORK -->
+        <div id="homework" class="form-content">
+            <h2>Manage Homework</h2>
+            
+            <!-- Post Homework Form -->
+            <div class="dashboard-card" style="margin-bottom: 2rem;">
+                <div class="card-header"><h3>Post New Homework</h3></div>
+                <form action="post_homework.php" method="post">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                    <div class="form-grid">
+                        <select name="class_id" required onchange="updateSubjects(this.value, 'hw')">
+                            <option value="">Select Class</option>
+                            <?php
+                            if ($assignments && $assignments->num_rows > 0) {
+                                $assignments->data_seek(0);
+                                $unique_classes = [];
+                                while($row = $assignments->fetch_assoc()) {
+                                    if (!in_array($row['class_id'], $unique_classes)) {
+                                        echo "<option value='{$row['class_id']}'>{$row['class_name']}</option>";
+                                        $unique_classes[] = $row['class_id'];
+                                    }
+                                }
+                            }
+                            ?>
+                        </select>
+                        <select name="subject_id" id="hw_subject_select" required>
+                            <option value="">Select Subject</option>
+                            <!-- Populated via AJAX -->
+                        </select>
+                        <input type="text" name="title" placeholder="Homework Title" required>
+                        <input type="date" name="due_date" required>
+                    </div>
+                    <textarea name="description" placeholder="Homework Description / Instructions" rows="3" style="width:100%; margin-top:1rem; background:rgba(255,255,255,0.05); border:1px solid #333; color:#fff; padding:0.5rem;" required></textarea>
+                    <button type="submit" class="submit-btn" style="margin-top:1rem;">Post Homework</button>
+                </form>
+            </div>
+
+            <!-- Recent Homework List -->
+            <h3>Recently Posted</h3>
+            <?php if ($homework_res && $homework_res->num_rows > 0): ?>
+                <table class="students-table">
+                    <thead><tr><th>Class</th><th>Subject</th><th>Title</th><th>Due Date</th></tr></thead>
+                    <tbody>
+                        <?php while($hw = $homework_res->fetch_assoc()): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($hw['class_name']) ?></td>
+                                <td><?= htmlspecialchars($hw['subject_name']) ?></td>
+                                <td><?= htmlspecialchars($hw['title']) ?></td>
+                                <td><?= $hw['due_date'] ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <p class="empty-state">No homework posted yet.</p>
+            <?php endif; ?>
+        </div>
+
+        <!-- TIMETABLE -->
+        <div id="timetable" class="form-content">
+            <h2>My Teaching Schedule</h2>
+            <?php if ($timetable_res && $timetable_res->num_rows > 0): ?>
+                <table class="students-table">
+                    <thead><tr><th>Day</th><th>Time</th><th>Class</th><th>Subject</th></tr></thead>
+                    <tbody>
+                        <?php while($tt = $timetable_res->fetch_assoc()): ?>
+                            <tr>
+                                <td><?= $tt['day_of_week'] ?></td>
+                                <td><?= date('h:i A', strtotime($tt['start_time'])) ?> - <?= date('h:i A', strtotime($tt['end_time'])) ?></td>
+                                <td><?= htmlspecialchars($tt['class_name']) ?></td>
+                                <td><?= htmlspecialchars($tt['subject_name']) ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <p class="empty-state">No timetable available.</p>
+            <?php endif; ?>
         </div>
     </div>
     <script src="script.js?v=<?php echo time(); ?>"></script>

@@ -2,6 +2,11 @@
 session_start();
 include 'config.php';
 
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: login.php");
+    exit;
+}
+
 $class_id = isset($_GET['class_id']) ? (int)$_GET['class_id'] : 0;
 $term = isset($_GET['term']) ? trim($_GET['term']) : '';
 
@@ -15,6 +20,7 @@ $s_stmt = $conn->prepare("SELECT s.id, s.full_name, g.guardian_name, c.name as c
                           LEFT JOIN guardians g ON s.guardian_id = g.id 
                           LEFT JOIN classes c ON s.class_id = c.id 
                           WHERE s.class_id = ? 
+                          AND s.deleted_at IS NULL
                           ORDER BY s.full_name");
 $s_stmt->bind_param("i", $class_id);
 $s_stmt->execute();

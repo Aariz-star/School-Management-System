@@ -1,6 +1,9 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id'])) { header("Location: login.php"); exit; }
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') { header("Location: login.php"); exit; }
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 include 'config.php';
 ?>
 <!DOCTYPE html>
@@ -28,6 +31,7 @@ include 'config.php';
         <?php
         $sql = "SELECT t.id, t.name, t.father_name, t.salary, t.phone, t.email, t.remaining_payment
                 FROM teachers t
+                WHERE t.deleted_at IS NULL
                 ORDER BY t.id DESC";
 
         $result = $conn->query($sql);
@@ -63,6 +67,7 @@ include 'config.php';
                         $subject_sql = "SELECT s.name FROM subjects s
                                       INNER JOIN teacher_subjects ts ON s.id = ts.subject_id
                                       WHERE ts.teacher_id = {$row['id']}
+                                      AND s.deleted_at IS NULL
                                       ORDER BY s.name";
                         $subject_result = $conn->query($subject_sql);
                         $subjects = [];
@@ -72,7 +77,7 @@ include 'config.php';
                     </td>
                     <td data-label="Actions">
                         <a href="teacher_edit.php?id=<?= $row['id'] ?>" class="action-btn edit">Edit</a>
-                        <button type="button" data-id="<?= $row['id'] ?>" data-type="teacher" class="action-btn delete delete-btn">Delete</button>
+                        <button type="button" data-id="<?= $row['id'] ?>" data-type="teacher" data-csrf="<?= $_SESSION['csrf_token'] ?>" class="action-btn delete delete-btn">Delete</button>
                     </td>
                 </tr>
             <?php endwhile; ?>

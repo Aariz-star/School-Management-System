@@ -9,6 +9,12 @@
 │  Professional School Management Platform             │
 └─────────────────────────────────────────────────────┘
 
+┌──────────────┬──────────────┬──────────────┬──────────────┐
+│ 👨‍🎓 Students │ 👨‍🏫 Teachers │ 📚 Classes   │ 📊 Attend %  │
+└──────────────┴──────────────┴──────────────┴──────────────┘
+┌─────────────────────────────┬─────────────────────────────┐
+│ 📈 Attendance Trends Chart  │ 🍩 Grade Performance Chart  │
+└─────────────────────────────┴─────────────────────────────┘
 ┌──────────────┬──────────────┬──────────────┬──────────────┬──────────────┐
 │ 📝 Student   │ ➕ Add       │ 📚 Classes & │ 👨‍🏫 Teacher    │ 💰 Fees      │
 │ Registration │ Teacher      │ Subjects     │ Assignments  │ Management   │
@@ -357,17 +363,16 @@ JavaScript Auto-hides Message (5 seconds)
 
 | Form | Fields | Action | Table | Validates |
 |------|--------|--------|-------|-----------|
-| Student | 7 | student_register.php | students | Email unique |
-| Teacher | 6 | add_teacher.php | teachers | Email unique |
-| Attendance | 4 | attendance_record.php | attendance | Status valid |
-| Grades | 6 | grade_entry.php | grades | Marks range |
+| Student Reg | | add_classes.php | classes | Unique name |
+| Add Subject | 1 | add_subject.php | subjects | Unique name |
+| Attendance | 4 | attendance_record.php | attendance | Status valid, Date check |
+| Grades | 6 | grade_entry.php | grades | Marks range (0-100) |
 | Fees | 6 | fee_management.php | fees | Amount > 0 |
-| Classes | 3 | add_classes.php | classes | Unique name |
-| Subjects | 1 | add_subject.php | subjects | Unique name |
+| Assign Teacher | 4 | teacher_assign.php | teacher_assignments | All IDs valid |
 
 ---
 
-## Key Features Implemented
+## Key Features Implemented (v2.1)
 
 ✅ **Role-Based Access Control**
    - Admin: Full control (Fees, Registration, Classes)
@@ -384,6 +389,18 @@ JavaScript Auto-hides Message (5 seconds)
    - Detailed Marks Certificate (DMC) Generation
    - Bulk Printing for Admins
    - Percentage Calculation
+
+✅ **Robust Security**
+   - **CSRF Protection**: Token verification on all POST requests
+   - **Soft Deletes**: Records marked as deleted (`deleted_at`) instead of removed
+   - **Secure Auth**: Brute-force protection, session regeneration, secure cookies
+   - **Input Sanitization**: Prepared statements everywhere
+
+✅ **Teacher Management Module**
+   - Comprehensive profile management
+   - Multi-subject assignment
+   - Salary and payment tracking
+   - Class Master assignment
 
 ✅ **Beautiful Design**
    - Black theme with cyan accents

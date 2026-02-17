@@ -2,10 +2,23 @@
 session_start();
 include 'config.php';
 
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: login.php");
+    exit;
+}
+
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 // Handle Form Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
+
     $teacher_id = intval($_POST['teacher_id']);
     $name = trim($_POST['name']);
     $father_name = trim($_POST['father_name']);
@@ -67,6 +80,7 @@ while($row = $res->fetch_assoc()) {
     <div class="container" style="margin-top: 50px;">
         <form class="form-content active" method="post">
             <h2>Edit Teacher</h2>
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
             <input type="hidden" name="teacher_id" value="<?= $teacher['id'] ?>">
 
             <div class="form-grid">

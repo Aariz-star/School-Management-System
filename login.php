@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username']);
     $password = $_POST['password'];
 
-    $stmt = $conn->prepare("SELECT id, password, role, related_id FROM users WHERE username = ?");
+    $stmt = $conn->prepare("SELECT id, password, role, related_id, failed_attempts, locked_until, is_active FROM users WHERE username = ?");
     if (!$stmt) {
         // This handles the error if the table doesn't exist
         die("Database Error: " . $conn->error . "<br><strong>Hint: Did you run the AUTH_SETUP.sql script in phpMyAdmin?</strong>");
@@ -32,13 +32,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->store_result();
 
     if ($stmt->num_rows > 0) {
-        $stmt->bind_result($id, $hashed_password, $role, $related_id);
+        $stmt->bind_result($id, $hashed_password, $role, $related_id, $failed_attempts, $locked_until, $is_active);
         $stmt->fetch();
 
+        // 1. Check if account is locked
+        if ($locked_until && new DateTime($locked_until) > new DateTime()) {
+            $_SESSION['login_error'] = "Account locked due to too many failed attempts. Please try again after 15 minutes.";
+            header("Location: login.php");
+            exit;
+        }
+
+        // 2. Check if account is active
+        if ($is_active == 0) {
+            $_SESSION['login_error'] = "Your account has been deactivated. Please contact administration.";
+            header("Location: login.php");
+            exit;
+        }
+
         if (!empty($hashed_password) && password_verify($password, $hashed_password)) {
+            // SUCCESS: Reset failures and update login info
+            $reset_stmt = $conn->prepare("UPDATE users SET failed_attempts = 0, locked_until = NULL, last_login = NOW() WHERE id = ?");
+            $reset_stmt->bind_param("i", $id);
+            $reset_stmt->execute();
+            $reset_stmt->close();
+
+            // Security: Prevent Session Fixation
+            session_regenerate_id(true);
+
             $_SESSION['user_id'] = $id;
             $_SESSION['role'] = $role;
             $_SESSION['related_id'] = $related_id; // ID of the specific teacher or student
+            $_SESSION['last_activity'] = time(); // For session timeout
             
             // Remember Me: Extend session cookie lifetime to 30 days
             if (isset($_POST['remember_me'])) {
@@ -48,6 +72,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             header("Location: index.php");
             exit;
+        } else {
+            // FAILURE: Increment failed attempts
+            $failed_attempts++;
+            $lock_time = null;
+            if ($failed_attempts >= 5) {
+                $lock_time = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+            }
+            
+            $fail_stmt = $conn->prepare("UPDATE users SET failed_attempts = ?, locked_until = ? WHERE id = ?");
+            $fail_stmt->bind_param("isi", $failed_attempts, $lock_time, $id);
+            $fail_stmt->execute();
         }
     }
 

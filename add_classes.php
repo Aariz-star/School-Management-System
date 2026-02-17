@@ -3,7 +3,16 @@
 session_start();
 include 'config.php';
 
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: login.php");
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
+
     // Get form data
     $name = isset($_POST['name']) ? trim($_POST['name']) : '';
     $subjects = isset($_POST['subjects']) ? $_POST['subjects'] : [];
@@ -12,7 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validation
     if (empty($name)) {
         $_SESSION['error'] = "Class name is required!";
-        header("Location: index.php?section=add_class");
+        $return_to = isset($_POST['return_to']) ? $_POST['return_to'] : 'add_class';
+        header("Location: index.php?return_to=" . urlencode($return_to));
         exit();
     }
     
@@ -25,7 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($check_result->num_rows > 0) {
         $_SESSION['error'] = "Class '$name' already exists!";
         $check_stmt->close();
-        header("Location: index.php?section=add_class");
+        $return_to = isset($_POST['return_to']) ? $_POST['return_to'] : 'add_class';
+        header("Location: index.php?return_to=" . urlencode($return_to));
         exit();
     }
     $check_stmt->close();
@@ -35,7 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if (!$stmt) {
         $_SESSION['error'] = "Prepare failed: " . $conn->error;
-        header("Location: index.php?section=add_class");
+        $return_to = isset($_POST['return_to']) ? $_POST['return_to'] : 'add_class';
+        header("Location: index.php?return_to=" . urlencode($return_to));
         exit();
     }
     
@@ -60,12 +72,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $_SESSION['success'] = "Class '$name' added successfully with " . count($subjects) . " subjects!";
         $stmt->close();
-        header("Location: index.php?section=add_class");
+        $return_to = isset($_POST['return_to']) ? $_POST['return_to'] : 'add_class';
+        header("Location: index.php?return_to=" . urlencode($return_to));
         exit();
     } else {
         $_SESSION['error'] = "Failed to add class: " . $stmt->error;
         $stmt->close();
-        header("Location: index.php?section=add_class");
+        $return_to = isset($_POST['return_to']) ? $_POST['return_to'] : 'add_class';
+        header("Location: index.php?return_to=" . urlencode($return_to));
         exit();
     }
 }

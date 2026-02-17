@@ -2,8 +2,17 @@
 session_start();
 include 'config.php';
 
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
 $student_id = isset($_GET['student_id']) ? (int)$_GET['student_id'] : 0;
 $term = isset($_GET['term']) ? trim($_GET['term']) : '';
+
+if ($_SESSION['role'] === 'student' && $_SESSION['related_id'] != $student_id) {
+    die("Access Denied: You can only view your own DMC.");
+}
 
 if ($student_id <= 0 || empty($term)) {
     die("Invalid Request. Student ID and Term are required.");
@@ -14,7 +23,7 @@ $stmt = $conn->prepare("SELECT s.full_name, s.contact_number, g.guardian_name, c
                         FROM students s 
                         LEFT JOIN guardians g ON s.guardian_id = g.id 
                         LEFT JOIN classes c ON s.class_id = c.id 
-                        WHERE s.id = ?");
+                        WHERE s.id = ? AND s.deleted_at IS NULL");
 $stmt->bind_param("i", $student_id);
 $stmt->execute();
 $student = $stmt->get_result()->fetch_assoc();
