@@ -66,32 +66,8 @@ while($row = $s_res->fetch_assoc()) {
 <head>
     <meta charset="UTF-8">
     <title>Fee Receipt - <?= htmlspecialchars($invoice['title']) ?></title>
+    <link rel="stylesheet" href="reports.css?v=<?php echo time(); ?>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f4; padding: 20px; }
-        .receipt-container {
-            max-width: 700px; margin: 0 auto; background: #fff; padding: 40px;
-            border: 1px solid #ddd; box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
-        .header h1 { margin: 0; color: #333; text-transform: uppercase; }
-        .header p { margin: 5px 0; color: #666; }
-        
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-        .info-item label { display: block; font-weight: bold; color: #666; font-size: 0.9rem; }
-        .info-item span { display: block; font-size: 1.1rem; color: #000; }
-        
-        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background: #f9f9f9; font-weight: bold; }
-        
-        .status-badge {
-            display: inline-block; padding: 5px 10px; border-radius: 4px; font-weight: bold;
-            background: #d1fae5; color: #065f46; border: 1px solid #10b981;
-        }
-        
-        .footer { text-align: center; margin-top: 50px; color: #999; font-size: 0.9rem; }
-    </style>
 </head>
 <body>
 
@@ -154,20 +130,9 @@ while($row = $s_res->fetch_assoc()) {
 </div>
 
 <script>
-    window.onload = function() {
-        const element = document.getElementById('receipt-content');
-        html2canvas(element, {
-            scale: 2, // High resolution
-            backgroundColor: "#ffffff"
-        }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = 'Receipt_<?= $invoice_id ?>_<?= preg_replace("/[^a-zA-Z0-9]/", "", $invoice["full_name"]) ?>.png';
-            link.href = canvas.toDataURL("image/png");
-            link.click();
-            
-            document.body.innerHTML = '<div style="text-align:center; padding:50px; font-family:sans-serif; color:#333;"><h2>Receipt Downloaded!</h2><p>Check your downloads folder.</p><button onclick="window.close()" style="padding:10px 20px; cursor:pointer; background:#333; color:#fff; border:none; border-radius:5px;">Close Window</button></div>';
-        });
-    };
+    // Pass filename to external JS
+    window.receiptFilename = 'Receipt_<?= $invoice_id ?>_<?= preg_replace("/[^a-zA-Z0-9]/", "", $invoice["full_name"]) ?>.png';
 </script>
+<script src="receipt.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>

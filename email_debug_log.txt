@@ -1,0 +1,8 @@
+[2026-03-13 14:39:28] Failed to send email to aarizk257@gmail.com. OTP is: 614936
+[2026-03-13 14:39:37] Failed to send email to aarizk257@gmail.com. OTP is: 680062
+[2026-03-13 14:55:06] To: aarizk257@gmail.com | From: azwalker257@gmail.com | OTP: 433049 | Mail Status: Failed
+[2026-03-14 19:12:11] To: aarizk257@gmail.com | From: azwalker257@gmail.com | OTP: 828673 | Mail Status: Failed
+[2026-03-14 19:15:36] To: aarizk257@gmail.com | From: azwalker257@gmail.com | OTP: 257518 | Mail Status: Failed: SMTP Error: Could not authenticate.
+[2026-03-14 19:15:52] To: aarizk257@gmail.com | From: azwalker257@gmail.com | OTP: 957704 | Mail Status: Failed: SMTP Error: Could not authenticate.
+[2026-03-14 19:23:46] To: aarizk257@gmail.com | From: azwalker257@gmail.com | OTP: 512102 | Mail Status: Sent (PHPMailer)
+[2026-03-14 20:45:03] To: aarizk257@gmail.com | From: azwalker257@gmail.com | OTP: 108611 | Mail Status: Sent (PHPMailer)

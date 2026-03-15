@@ -1,4 +1,16 @@
 <?php
+// Enforce secure session settings to match login.php
+$cookieParams = session_get_cookie_params();
+$is_https = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') 
+            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+session_set_cookie_params([
+    'lifetime' => $cookieParams['lifetime'],
+    'path' => $cookieParams['path'],
+    'domain' => $cookieParams['domain'],
+    'secure' => $is_https,
+    'httponly' => true, // Prevent JavaScript access to session cookie
+    'samesite' => 'Lax'
+]);
 session_start();
 
 // Authentication Check

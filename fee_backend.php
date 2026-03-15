@@ -39,16 +39,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Extract numeric part from class name (e.g., "5th" -> "5")
         $class_num = preg_replace('/[^0-9]/', '', $class_name);
         
+        // Get the last sequence number used for this class prefix to ensure uniqueness
+        $prefix = $class_num . "-";
+        $seq_sql = "SELECT invoice_number FROM fee_invoices WHERE invoice_number LIKE '$prefix%' ORDER BY LENGTH(invoice_number) DESC, invoice_number DESC LIMIT 1";
+        $seq_res = $conn->query($seq_sql);
+        $last_seq = 0;
+        if ($seq_res && $seq_res->num_rows > 0) {
+            $last_inv = $seq_res->fetch_assoc()['invoice_number'];
+            $parts = explode('-', $last_inv);
+            if (count($parts) > 1) {
+                $last_seq = (int)$parts[1];
+            }
+        }
+
         while($row = $res->fetch_assoc()) {
-            // Generate invoice number: CLASS-SEQUENCE (e.g., 5-001, 5-002, etc.)
-            // Get the count of existing invoices for this student to create sequential numbers
-            $seq_res = $conn->query("SELECT COUNT(*) + 1 as next_seq FROM fee_invoices WHERE student_id = " . $row['id']);
-            $next_seq = $seq_res->fetch_assoc()['next_seq'];
-            $invoice_number = $class_num . "-" . str_pad($next_seq, 3, '0', STR_PAD_LEFT);
+            $last_seq++;
+            $invoice_number = $class_num . "-" . str_pad($last_seq, 3, '0', STR_PAD_LEFT);
             
             $ins->bind_param("issds", $row['id'], $invoice_number, $title, $amount, $due_date);
-            $ins->execute();
-            $count++;
+            if ($ins->execute()) {
+                $count++;
+            }
         }
         
         $_SESSION['success'] = "Generated $count invoices successfully!";

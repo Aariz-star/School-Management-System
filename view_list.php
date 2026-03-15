@@ -25,7 +25,7 @@ $view = isset($_GET['view']) && $_GET['view'] === 'teachers' ? 'teachers' : 'stu
                 <h1><?= $view === 'teachers' ? 'Teachers Directory' : 'Registered Students' ?></h1>
                 <p><?= $view === 'teachers' ? 'Staff Management' : 'Full Directory' ?></p>
             </div>
-            <a href="index.php" class="menu-toggle" style="text-decoration: none; margin-top: 0;">Back to Dashboard</a>
+            <a href="index.php" class="menu-toggle" style="text-decoration: none;">Back to Dashboard</a>
         </div>
     </header>
 
@@ -40,15 +40,15 @@ $view = isset($_GET['view']) && $_GET['view'] === 'teachers' ? 'teachers' : 'stu
             $status = isset($_GET['status']) && $_GET['status'] === 'trash' ? 'trash' : 'active';
             ?>
             
-            <div class="sub-nav-grid" style="margin-bottom: 1.5rem; display: flex; gap: 1rem;">
+            <div class="filter-box">
                 <a href="view_list.php?view=students&class_id=<?= $selected_class ?>&status=active" class="btn btn-reset" style="<?= $status === 'active' ? 'background: #00d4ff; color: #000;' : '' ?>">Active Students</a>
                 <a href="view_list.php?view=students&class_id=<?= $selected_class ?>&status=trash" class="btn btn-reset" style="<?= $status === 'trash' ? 'background: #ef4444; color: #fff;' : '' ?>">Recycle Bin 🗑️</a>
             </div>
             
-            <form method="get" class="filter-form">
+            <form method="get" class="filter-box">
                 <input type="hidden" name="view" value="students">
                 <input type="hidden" name="status" value="<?= $status ?>">
-                <label style="color: #00d4ff; font-weight: bold;">Filter by Class:</label>
+                <label style="color: #00d4ff; font-weight: bold; margin-right: 10px;">Filter by Class:</label>
                 <select name="class_id" onchange="this.form.submit()" class="filter-select">
                     <option value="">-- Select Class --</option>
                     <?php
@@ -65,8 +65,8 @@ $view = isset($_GET['view']) && $_GET['view'] === 'teachers' ? 'teachers' : 'stu
             $result = null;
             
             if ($selected_class > 0) {
-                // Only show students with status='active'. Inactive students are hidden completely.
-                $where_clause = ($status === 'trash') ? "s.deleted_at IS NOT NULL AND s.status = 'active'" : "s.deleted_at IS NULL AND s.status = 'active'";
+                // Show all students regardless of status (active/inactive)
+                $where_clause = ($status === 'trash') ? "s.deleted_at IS NOT NULL" : "s.deleted_at IS NULL";
                 $sql = "SELECT s.id, s.full_name, s.email, s.contact_number,
                                g.guardian_name, g.contact_number AS guardian_contact,
                                DATE_FORMAT(s.admission_date, '%d-%m-%Y') AS adm_date,
@@ -81,6 +81,7 @@ $view = isset($_GET['view']) && $_GET['view'] === 'teachers' ? 'teachers' : 'stu
             ?>
             
             <?php if ($result && $result->num_rows > 0): ?>
+            <div class="table-responsive">
             <table class="students-table">
                 <thead>
                     <tr>
@@ -114,6 +115,7 @@ $view = isset($_GET['view']) && $_GET['view'] === 'teachers' ? 'teachers' : 'stu
                         <td data-label="Actions">
                             <?php if ($status === 'active'): ?>
                                 <a href="student_edit.php?id=<?= $row['id'] ?>" class="action-btn edit">Edit</a>
+                                <button type="button" onclick="adminResetPassword(<?= $row['id'] ?>, 'student')" class="action-btn edit" style="background: #f59e0b; border-color: #f59e0b;" title="Reset Password">🔑</button>
                                 <button type="button" data-id="<?= $row['id'] ?>" data-type="student" data-csrf="<?= $_SESSION['csrf_token'] ?>" class="action-btn delete delete-btn">Delete</button>
                             <?php else: ?>
                                 <form action="student_delete.php" method="post" style="display:inline;">
@@ -136,6 +138,7 @@ $view = isset($_GET['view']) && $_GET['view'] === 'teachers' ? 'teachers' : 'stu
                 <?php endwhile; ?>
                 </tbody>
             </table>
+            </div>
             <?php elseif ($selected_class > 0): ?>
                 <p class="no-data-msg">No students found in this class.</p>
             <?php else: ?>
@@ -150,7 +153,7 @@ $view = isset($_GET['view']) && $_GET['view'] === 'teachers' ? 'teachers' : 'stu
             $status = isset($_GET['status']) && $_GET['status'] === 'trash' ? 'trash' : 'active';
             ?>
             
-            <div class="sub-nav-grid" style="margin-bottom: 1.5rem; display: flex; gap: 1rem;">
+            <div class="filter-box">
                 <a href="view_list.php?view=teachers&status=active" class="btn btn-reset" style="<?= $status === 'active' ? 'background: #00d4ff; color: #000;' : '' ?>">Active Teachers</a>
                 <a href="view_list.php?view=teachers&status=trash" class="btn btn-reset" style="<?= $status === 'trash' ? 'background: #ef4444; color: #fff;' : '' ?>">Recycle Bin 🗑️</a>
             </div>
@@ -165,6 +168,7 @@ $view = isset($_GET['view']) && $_GET['view'] === 'teachers' ? 'teachers' : 'stu
             ?>
             
             <?php if ($result && $result->num_rows > 0): ?>
+            <div class="table-responsive">
             <table class="students-table">
                 <thead>
                     <tr>
@@ -204,6 +208,7 @@ $view = isset($_GET['view']) && $_GET['view'] === 'teachers' ? 'teachers' : 'stu
                         <td data-label="Actions">
                             <?php if ($status === 'active'): ?>
                                 <a href="teacher_edit.php?id=<?= $row['id'] ?>" class="action-btn edit">Edit</a>
+                                <button type="button" onclick="adminResetPassword(<?= $row['id'] ?>, 'teacher')" class="action-btn edit" style="background: #f59e0b; border-color: #f59e0b;" title="Reset Password">🔑</button>
                                 <button type="button" data-id="<?= $row['id'] ?>" data-type="teacher" data-csrf="<?= $_SESSION['csrf_token'] ?>" class="action-btn delete delete-btn">Delete</button>
                             <?php else: ?>
                                 <form action="teacher_delete.php" method="post" style="display:inline;">
@@ -224,6 +229,7 @@ $view = isset($_GET['view']) && $_GET['view'] === 'teachers' ? 'teachers' : 'stu
                 <?php endwhile; ?>
                 </tbody>
             </table>
+            </div>
             <?php else: ?>
                 <p class="no-data-msg">No teachers registered yet.</p>
             <?php endif; ?>

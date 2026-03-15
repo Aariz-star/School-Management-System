@@ -126,4 +126,19 @@ $pending_sql = "SELECT p.*, i.title, i.invoice_number, i.amount as invoice_amoun
 if ($res = $conn->query($pending_sql)) {
     while($row = $res->fetch_assoc()) $pending_payments_list[] = $row;
 }
+
+// 8. Pre-calculate Verified Amounts for Pending Invoices (Optimization)
+// This prevents running a query inside the loop in index.php (N+1 problem)
+$verified_amount_map = [];
+if (!empty($pending_payments_list)) {
+    $invoice_ids = array_unique(array_column($pending_payments_list, 'invoice_id'));
+    $ids_str = implode(',', array_map('intval', $invoice_ids));
+    
+    $v_sql = "SELECT invoice_id, SUM(amount) as total FROM fee_payments WHERE status = 'Verified' AND invoice_id IN ($ids_str) GROUP BY invoice_id";
+    if ($v_res = $conn->query($v_sql)) {
+        while($row = $v_res->fetch_assoc()) {
+            $verified_amount_map[$row['invoice_id']] = $row['total'];
+        }
+    }
+}
 ?>

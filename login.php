@@ -1,13 +1,15 @@
 <?php
 // Enforce secure session settings
 $cookieParams = session_get_cookie_params();
+$is_https = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') 
+            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
 session_set_cookie_params([
     'lifetime' => $cookieParams['lifetime'],
     'path' => $cookieParams['path'],
     'domain' => $cookieParams['domain'],
-    'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on', // Only set secure flag if HTTPS is active
+    'secure' => $is_https,
     'httponly' => true, // Prevent JavaScript access to session cookie
-    'samesite' => 'Strict' // Prevent CSRF attacks
+    'samesite' => 'Lax'
 ]);
 session_start();
 include 'config.php';
@@ -62,6 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $id;
             $_SESSION['role'] = $role;
             $_SESSION['related_id'] = $related_id; // ID of the specific teacher or student
+            $_SESSION['username'] = $username; // Store username for display
             $_SESSION['last_activity'] = time(); // For session timeout
             
             // Remember Me: Extend session cookie lifetime to 30 days
@@ -213,6 +216,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="remember-me-container">
                 <input type="checkbox" name="remember_me" id="remember_me">
                 <label for="remember_me">Remember me</label>
+            </div>
+
+            <div style="margin-top: 1rem; text-align: center;">
+                <a href="forgot_password.php" style="color: #00d4ff; text-decoration: none; font-size: 0.9rem; transition: color 0.3s;">Forgot Password?</a>
             </div>
             
             <button class="submit-btn" type="submit">Sign In</button>

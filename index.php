@@ -1,5 +1,17 @@
 <?php
-// index.php
+// index.php`
+// Enforce secure session settings to match login.php
+$cookieParams = session_get_cookie_params();
+$is_https = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') 
+            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+session_set_cookie_params([
+    'lifetime' => $cookieParams['lifetime'],
+    'path' => $cookieParams['path'],
+    'domain' => $cookieParams['domain'],
+    'secure' => $is_https,
+    'httponly' => true, // Prevent JavaScript access to session cookie
+    'samesite' => 'Lax'
+]);
 session_start();
 
 // Authentication Check
@@ -77,7 +89,7 @@ require_once 'admin_dashboard_logic.php';
         <div class="header-overlay">
             <h1>Ideal Model School</h1>
             <p>Student Management System</p>
-            <div class="welcome-msg">Welcome, <?= htmlspecialchars($_SESSION['role']) ?></div>
+            <div class="welcome-msg">Welcome, <?= htmlspecialchars($_SESSION['username'] ?? $_SESSION['role']) ?></div>
             <button class="menu-toggle" onclick="toggleSidebar()">Dashboard</button>
         </div>
     </header>
@@ -96,13 +108,15 @@ require_once 'admin_dashboard_logic.php';
         <button class="nav-btn"         onclick="showForm('student')">Student Registration</button>
         <a href="view_list.php?view=students" class="nav-btn">View Students</a>
         <button class="nav-btn"         onclick="showForm('add_teacher')">Add Teacher</button>
-        <a href="view_list.php?view=teachers" class="nav-btn">Teachers Directory</a>
+        <button class="nav-btn"         onclick="showForm('teachers_list'); loadTeachersList();">Teachers Directory</button>
         <button class="nav-btn"         onclick="showForm('add_class')">Classes & Subjects</button>
         <button class="nav-btn"         onclick="showForm('teacher')">Teacher Assignments</button>
         <button class="nav-btn"         onclick="showForm('fee')">Fee Management</button>
         <button class="nav-btn"         onclick="showForm('attendance')">Attendance</button>
         <button class="nav-btn"         onclick="showForm('grade')">Grades</button>
         <a href="create_user.php" class="nav-btn">Create User Account</a>
+        <a href="change_password.php" class="nav-btn">Change Password</a>
+        <button class="nav-btn"         onclick="showForm('password_manager')">Password Manager</button>
 
         <!-- LOGOUT -->
         <a href="logout.php" class="nav-btn logout-btn">Logout</a>
@@ -239,6 +253,37 @@ require_once 'admin_dashboard_logic.php';
             </div>
             <button class="submit-btn" type="submit">Register Teacher</button>
         </form>
+
+        <!-- ──────────────────────────────────────────────── -->
+        <!-- Teachers Directory (Loaded via AJAX)             -->
+        <!-- ──────────────────────────────────────────────── -->
+        <div id="teachers_list" class="form-content">
+            <h2>Teachers Directory</h2>
+            <div class="filter-box">
+                <button class="btn btn-reset" onclick="loadTeachersList()">↻ Refresh List</button>
+                <a href="recycle_bin.php?type=teachers" class="btn btn-reset" style="background: rgba(255, 68, 68, 0.1); color: #ff4444; border-color: #ff4444;">🗑️ Recycle Bin</a>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="students-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name / Father</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th style="text-align:right;">Salary</th>
+                            <th style="text-align:right;">Balance</th>
+                            <th>Subjects</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teachers_table_body">
+                        <!-- Rows will be loaded here via AJAX -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
         <!-- ──────────────────────────────────────────────── -->
         <!-- Add Class Form                                   -->
@@ -906,7 +951,7 @@ require_once 'admin_dashboard_logic.php';
                     <div class="stat-icon stat-icon-success">✅</div>
                     <div class="stat-info"><h3>Rs. <?= number_format($collected_month) ?></h3><p>Collected This Month</p></div>
                 </div>
-                <div class="stat-card" onclick="toggleSubSection('sub_verify_payments')" style="cursor:pointer; border-color: <?= $pending_verifications > 0 ? '#ef4444' : '#333' ?>">
+                <div class="stat-card clickable <?= $pending_verifications > 0 ? 'border-danger' : '' ?>" onclick="toggleSubSection('sub_verify_payments')">
                     <div class="stat-icon stat-icon-danger">🔔</div>
                     <div class="stat-info"><h3><?= $pending_verifications ?></h3><p>Pending Verifications</p></div>
                 </div>
@@ -949,7 +994,7 @@ require_once 'admin_dashboard_logic.php';
                 <h3>View & Delete Invoices by Class</h3>
                 <div style="margin-bottom: 1.5rem;">
                     <label style="display: block; margin-bottom: 0.5rem; color: #00d4ff; font-weight: bold;">Select Class:</label>
-                    <select id="delete_class_filter" style="padding: 0.8rem; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; color: #fff; width: 100%; max-width: 400px;" onchange="filterInvoicesByClass()">
+                    <select id="delete_class_filter" class="class-filter-select" onchange="filterInvoicesByClass()">
                         <option value="">-- Select Class --</option>
                         <?php
                         foreach($classes_list as $c) {
@@ -960,16 +1005,16 @@ require_once 'admin_dashboard_logic.php';
                 </div>
 
                 <div id="invoices_list" style="display: none;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <h4 style="margin: 0; color: #00d4ff;">Invoices for Class: <span id="selected_class_name"></span></h4>
-                        <div style="display: flex; gap: 10px;">
+                    <div class="invoice-list-header">
+                        <h4 class="invoice-header-title">Invoices for Class: <span id="selected_class_name"></span></h4>
+                        <div class="invoice-sort-buttons">
                             <button class="btn btn-reset" onclick="sortInvoices('student')">Sort by Student</button>
                             <button class="btn btn-reset" onclick="sortInvoices('amount')">Sort by Amount</button>
                             <button class="btn btn-reset" onclick="sortInvoices('status')">Sort by Status</button>
                         </div>
                     </div>
                     
-                    <table class="students-table" id="invoices_table" style="width: 100%;">
+                    <table class="students-table full-width-table" id="invoices_table">
                         <thead>
                             <tr>
                                 <th>Student Name</th>
@@ -984,7 +1029,7 @@ require_once 'admin_dashboard_logic.php';
                         <tbody id="invoices_tbody">
                         </tbody>
                     </table>
-                    <p id="no_invoices_msg" style="text-align: center; color: #666; padding: 2rem; display: none;">No invoices found for this class.</p>
+                    <p id="no_invoices_msg" class="no-invoices-msg">No invoices found for this class.</p>
                 </div>
             </div>
 
@@ -993,15 +1038,15 @@ require_once 'admin_dashboard_logic.php';
                 <h3>Edit Invoices</h3>
                 
                 <!-- Edit Tabs -->
-                <div style="display: flex; gap: 10px; margin-bottom: 2rem; border-bottom: 2px solid #333; padding-bottom: 1rem;">
-                    <button class="btn btn-reset edit-tab active" data-tab="bulk-edit" onclick="switchEditTab('bulk-edit')" style="border-bottom: 3px solid #00d4ff; padding-bottom: 0.5rem;">Bulk Edit (All Students)</button>
+                <div class="edit-invoice-tabs">
+                    <button class="btn btn-reset edit-tab active" data-tab="bulk-edit" onclick="switchEditTab('bulk-edit')">Bulk Edit (All Students)</button>
                     <button class="btn btn-reset edit-tab" data-tab="single-edit" onclick="switchEditTab('single-edit')">Edit Individual Invoice</button>
                 </div>
 
                 <!-- Bulk Edit Tab -->
                 <div id="bulk-edit-tab" class="edit-content" style="display: block;">
-                    <h4 style="color: #00d4ff; margin-top: 0;">Edit for All Students in Invoice</h4>
-                    <p style="color: #999; margin-bottom: 1.5rem;">Select an existing invoice to edit amount/title for all students</p>
+                    <h4 class="edit-section-title">Edit for All Students in Invoice</h4>
+                    <p class="edit-section-desc">Select an existing invoice to edit amount/title for all students</p>
                     
                     <form action="fee_backend.php" method="post">
                         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
@@ -1009,8 +1054,8 @@ require_once 'admin_dashboard_logic.php';
                         
                         <div class="form-grid">
                             <div>
-                                <label style="display: block; margin-bottom: 0.5rem; color: #00d4ff;">Select Invoice:</label>
-                                <select name="invoice_id" id="bulk_invoice_select" required onchange="loadBulkInvoiceDetails()" style="padding: 0.8rem; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; color: #fff; width: 100%;">
+                                <label class="input-label">Select Invoice:</label>
+                                <select name="invoice_id" id="bulk_invoice_select" required onchange="loadBulkInvoiceDetails()" class="form-select-dark">
                                     <option value="">-- Select Invoice --</option>
                                     <?php
                                     $inv_res = $conn->query("SELECT DISTINCT fi.id, fi.invoice_number, fi.title, fi.amount, COUNT(fi.id) as student_count, c.name as class_name
@@ -1029,34 +1074,34 @@ require_once 'admin_dashboard_logic.php';
                             </div>
                         </div>
 
-                        <div id="bulk_details" style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 6px; margin-top: 1.5rem; display: none;">
-                            <p style="color: #999; margin-bottom: 1rem;"><strong>Current Details:</strong></p>
-                            <p>Students Affected: <span id="bulk_student_count" style="color: #00d4ff; font-weight: bold;">0</span></p>
+                        <div id="bulk_details" class="details-box">
+                            <p class="details-label"><strong>Current Details:</strong></p>
+                            <p>Students Affected: <span id="bulk_student_count" class="highlight-count">0</span></p>
                             
                             <div class="form-grid" style="margin-top: 1rem;">
                                 <div>
-                                    <label style="display: block; margin-bottom: 0.5rem; color: #00d4ff;">New Title:</label>
-                                    <input type="text" name="new_title" placeholder="New invoice title" style="padding: 0.8rem; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; color: #fff; width: 100%;">
+                                    <label class="input-label">New Title:</label>
+                                    <input type="text" name="new_title" placeholder="New invoice title" class="form-select-dark">
                                 </div>
                                 <div>
-                                    <label style="display: block; margin-bottom: 0.5rem; color: #00d4ff;">New Amount (Rs.):</label>
-                                    <input type="number" name="new_amount" placeholder="New amount" step="0.01" style="padding: 0.8rem; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; color: #fff; width: 100%;">
+                                    <label class="input-label">New Amount (Rs.):</label>
+                                    <input type="number" name="new_amount" placeholder="New amount" step="0.01" class="form-select-dark">
                                 </div>
                             </div>
 
-                            <div style="background: rgba(255,165,0,0.1); border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 4px; margin-top: 1rem; color: #f59e0b;">
+                            <div class="warning-box">
                                 <strong>⚠ Warning:</strong> This will update the amount/title for all <span id="warn_count" style="font-weight: bold;">0</span> students in this invoice.
                             </div>
 
-                            <button type="submit" class="submit-btn" style="margin-top: 1.5rem; background: #f59e0b;">Update for All Students</button>
+                            <button type="submit" class="submit-btn btn-warning-update">Update for All Students</button>
                         </div>
                     </form>
                 </div>
 
                 <!-- Single Edit Tab -->
                 <div id="single-edit-tab" class="edit-content" style="display: none;">
-                    <h4 style="color: #00d4ff; margin-top: 0;">Edit Invoice for Single Student</h4>
-                    <p style="color: #999; margin-bottom: 1.5rem;">Edit amount/title for a specific student's invoice</p>
+                    <h4 class="edit-section-title">Edit Invoice for Single Student</h4>
+                    <p class="edit-section-desc">Edit amount/title for a specific student's invoice</p>
                     
                     <form action="fee_backend.php" method="post">
                         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
@@ -1064,11 +1109,11 @@ require_once 'admin_dashboard_logic.php';
                         
                         <div class="form-grid">
                             <div>
-                                <label style="display: block; margin-bottom: 0.5rem; color: #00d4ff;">Select Student:</label>
-                                <select name="student_id" id="single_student_select" required onchange="loadStudentInvoices()" style="padding: 0.8rem; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; color: #fff; width: 100%;">
+                                <label class="input-label">Select Student:</label>
+                                <select name="student_id" id="single_student_select" required onchange="loadStudentInvoices()" class="form-select-dark">
                                     <option value="">-- Select Student --</option>
                                     <?php
-                                    $s_res = $conn->query("SELECT DISTINCT s.id, s.full_name, c.name as class_name FROM students s JOIN classes c ON s.class_id = c.id WHERE s.deleted_at IS NULL AND s.status = 'active' ORDER BY c.name, s.full_name");
+                                    $s_res = $conn->query("SELECT DISTINCT s.id, s.full_name, c.name as class_name FROM students s JOIN classes c ON s.class_id = c.id WHERE s.deleted_at IS NULL ORDER BY c.name, s.full_name");
                                     if ($s_res && $s_res->num_rows > 0) {
                                         while($s = $s_res->fetch_assoc()) {
                                             echo "<option value='{$s['id']}'>[{$s['class_name']}] {$s['full_name']}</option>";
@@ -1078,31 +1123,31 @@ require_once 'admin_dashboard_logic.php';
                                 </select>
                             </div>
                             <div>
-                                <label style="display: block; margin-bottom: 0.5rem; color: #00d4ff;">Select Invoice:</label>
-                                <select name="invoice_id" id="single_invoice_select" required style="padding: 0.8rem; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; color: #fff; width: 100%;">
+                                <label class="input-label">Select Invoice:</label>
+                                <select name="invoice_id" id="single_invoice_select" required class="form-select-dark">
                                     <option value="">-- Select Invoice --</option>
                                 </select>
                             </div>
                         </div>
 
-                        <div id="single_details" style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 6px; margin-top: 1.5rem; display: none;">
-                            <p style="color: #999; margin-bottom: 1rem;"><strong>Current Details:</strong></p>
-                            <p>Title: <span id="single_invoice_title" style="color: #00d4ff; font-weight: bold;"></span></p>
-                            <p>Amount: <span id="single_invoice_amount" style="color: #10b981; font-weight: bold;"></span></p>
-                            <p>Status: <span id="single_invoice_status" style="color: #f59e0b; font-weight: bold;"></span></p>
+                        <div id="single_details" class="details-box">
+                            <p class="details-label"><strong>Current Details:</strong></p>
+                            <p>Title: <span id="single_invoice_title" class="highlight-count"></span></p>
+                            <p>Amount: <span id="single_invoice_amount" class="text-success-bold"></span></p>
+                            <p>Status: <span id="single_invoice_status" class="text-warning-bold"></span></p>
                             
                             <div class="form-grid" style="margin-top: 1rem;">
                                 <div>
-                                    <label style="display: block; margin-bottom: 0.5rem; color: #00d4ff;">New Title:</label>
-                                    <input type="text" name="new_title" placeholder="New invoice title" style="padding: 0.8rem; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; color: #fff; width: 100%;">
+                                    <label class="input-label">New Title:</label>
+                                    <input type="text" name="new_title" placeholder="New invoice title" class="form-select-dark">
                                 </div>
                                 <div>
-                                    <label style="display: block; margin-bottom: 0.5rem; color: #00d4ff;">New Amount (Rs.):</label>
-                                    <input type="number" name="new_amount" placeholder="New amount" step="0.01" style="padding: 0.8rem; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; color: #fff; width: 100%;">
+                                    <label class="input-label">New Amount (Rs.):</label>
+                                    <input type="number" name="new_amount" placeholder="New amount" step="0.01" class="form-select-dark">
                                 </div>
                             </div>
 
-                            <button type="submit" class="submit-btn" style="margin-top: 1rem;">Update Invoice</button>
+                            <button type="submit" class="submit-btn btn-update-single">Update Invoice</button>
                         </div>
                     </form>
                 </div>
@@ -1115,15 +1160,14 @@ require_once 'admin_dashboard_logic.php';
                     <div class="dashboard-grid">
                         <?php foreach($pending_payments_list as $pay): 
                             // Calculate remaining balance for this invoice
-                            // Note: We still query here for specific invoice balance as it's dynamic per row
-                            $total_verified_res = $conn->query("SELECT SUM(amount) as total FROM fee_payments WHERE invoice_id = " . (int)$pay['invoice_id'] . " AND status = 'Verified'");
-                            $verified_amount = $total_verified_res->fetch_assoc()['total'] ?? 0;
+                            // Optimization: Use pre-calculated map from logic file
+                            $verified_amount = $verified_amount_map[$pay['invoice_id']] ?? 0;
                             $remaining = (float)$pay['invoice_amount'] - (float)$verified_amount;
                         ?>
                             <div class="dashboard-card">
                                 <div class="card-header">
                                     <h3><?= htmlspecialchars($pay['full_name']) ?></h3>
-                                    <span style="color:#f59e0b; font-size:0.8rem;">Pending</span>
+                                    <span class="status-pending-text">Pending</span>
                                 </div>
                                 
                                 <!-- Invoice Number - Prominent Display -->
@@ -1133,30 +1177,30 @@ require_once 'admin_dashboard_logic.php';
                                 </div>
                                 
                                 <p><strong><?= htmlspecialchars($pay['title']) ?></strong></p>
-                                <p style="font-size:0.9rem; color:#aaa;">Class: <?= htmlspecialchars($pay['class_name']) ?></p>
+                                <p class="meta-text">Class: <?= htmlspecialchars($pay['class_name']) ?></p>
                                 <p>Payment Amount: Rs. <strong><?= number_format($pay['amount']) ?></strong></p>
                                 <p>Invoice Total: Rs. <?= number_format($pay['invoice_amount']) ?></p>
-                                <p style="color:<?= $remaining <= 0 ? '#10b981' : '#ef4444' ?>;">
+                                <p class="<?= $remaining <= 0 ? 'text-success-bold' : 'text-danger-bold' ?>">
                                     Remaining: Rs. <strong><?= number_format(max(0, $remaining)) ?></strong>
                                 </p>
-                                <p style="font-size:0.85rem; color:#999;">Ref: <?= htmlspecialchars($pay['reference_no']) ?></p>
+                                <p class="ref-text">Ref: <?= htmlspecialchars($pay['reference_no']) ?></p>
                                 <?php if($pay['proof_image']): ?>
                                     <a href="<?= htmlspecialchars($pay['proof_image']) ?>" target="_blank" class="proof-link">View Screenshot 📎</a>
                                 <?php endif; ?>
-                                <div style="display:flex; gap:10px; margin-top:1rem;">
-                                    <form action="fee_backend.php" method="post" style="flex:1;">
+                                <div class="action-buttons-row">
+                                    <form action="fee_backend.php" method="post" class="flex-form">
                                         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                         <input type="hidden" name="action" value="verify_payment">
                                         <input type="hidden" name="payment_id" value="<?= $pay['id'] ?>">
                                         <input type="hidden" name="status" value="Verified">
-                                        <button type="submit" class="submit-btn" style="background:#10b981; margin:0;">Approve</button>
+                                        <button type="submit" class="submit-btn btn-approve">Approve</button>
                                     </form>
-                                    <form action="fee_backend.php" method="post" style="flex:1;">
+                                    <form action="fee_backend.php" method="post" class="flex-form">
                                         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                         <input type="hidden" name="action" value="verify_payment">
                                         <input type="hidden" name="payment_id" value="<?= $pay['id'] ?>">
                                         <input type="hidden" name="status" value="Rejected">
-                                        <button type="submit" class="submit-btn" style="background:#ef4444; margin:0;">Reject</button>
+                                        <button type="submit" class="submit-btn btn-reject">Reject</button>
                                     </form>
                                 </div>
                             </div>
@@ -1178,9 +1222,66 @@ require_once 'admin_dashboard_logic.php';
                         <input type="number" name="amount" placeholder="Amount Received" required>
                         <input type="text" name="invoice_id" placeholder="Invoice ID (Optional)">
                     </div>
-                    <p style="color:#999; font-size:0.9rem; margin-top:0.5rem;">* System will auto-allocate to oldest unpaid invoice if Invoice ID is blank.</p>
+                    <p class="helper-text-small">* System will auto-allocate to oldest unpaid invoice if Invoice ID is blank.</p>
                     <button class="submit-btn" type="submit">Receive Cash</button>
                 </form>
+            </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────── -->
+        <!-- Password Manager (Admin Reset)                   -->
+        <!-- ──────────────────────────────────────────────── -->
+        <div id="password_manager" class="form-content">
+            <h2>User Password Manager</h2>
+            <p class="helper-text">Search for a student or teacher by ID to verify their profile and reset their password.</p>
+            
+            <div class="filter-box" style="align-items: flex-end;">
+                <div style="flex: 1;">
+                    <label class="filter-label">User Type:</label>
+                    <select id="pm_type_select" class="filter-select">
+                        <option value="student">Student</option>
+                        <option value="teacher">Teacher</option>
+                    </select>
+                </div>
+                <div style="flex: 2;">
+                    <label class="filter-label">Search ID:</label>
+                    <input type="number" id="pm_search_id" placeholder="Enter ID (e.g. 801)" class="filter-select" style="width: 100%;">
+                </div>
+                <button class="submit-btn" type="button" onclick="searchUserForReset()" style="margin: 0; width: auto; min-width: 120px;">Search</button>
+            </div>
+
+            <!-- Result Container -->
+            <div id="pm_result_container" style="display: none; margin-top: 2rem; background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 8px; border: 1px solid rgba(0, 212, 255, 0.2);">
+                <h3 class="sub-heading" style="color: #00d4ff; border-bottom: 1px solid #333; padding-bottom: 0.5rem; margin-bottom: 1rem;">User Profile</h3>
+                
+                <div style="display: flex; gap: 2rem; flex-wrap: wrap; align-items: center;">
+                    <!-- Profile Info -->
+                    <div style="flex: 1; min-width: 250px;">
+                        <h2 id="pm_name" style="margin: 0; color: #fff;">User Name</h2>
+                        <p id="pm_subtitle" style="color: #00d4ff; margin: 5px 0 15px 0;">Class/Role</p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9rem; color: #ccc;">
+                            <div><strong>ID:</strong> <span id="pm_id_display"></span></div>
+                            <div id="pm_detail1"></div>
+                            <div id="pm_detail2"></div>
+                            <div id="pm_account_status"></div>
+                        </div>
+                    </div>
+
+                    <!-- Action Form -->
+                    <div style="flex: 1; min-width: 250px; background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: 8px;">
+                        <h4 style="margin-top: 0; color: #e0e0e0;">Reset Password</h4>
+                        <form onsubmit="event.preventDefault(); submitAdminPasswordReset();">
+                            <input type="hidden" id="pm_hidden_id">
+                            <input type="hidden" id="pm_hidden_type">
+                            <input type="hidden" id="pm_csrf" value="<?= $_SESSION['csrf_token'] ?>">
+                            
+                            <input type="password" id="pm_new_password" placeholder="New Password" required minlength="6" style="width: 100%; margin-bottom: 1rem; padding: 0.8rem; background: #1a1a1a; border: 1px solid #333; color: white;">
+                            
+                            <button type="submit" class="submit-btn" style="margin-top: 0;">Update Password</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1207,6 +1308,13 @@ require_once 'admin_dashboard_logic.php';
         
         // Pass section to display
         window.returnToSection = "<?= htmlspecialchars($return_to_section ?? 'dashboard_view') ?>";
+        
+        // Initial chart load if dashboard is default
+        if (window.returnToSection === 'dashboard_view') {
+             document.addEventListener('DOMContentLoaded', function() {
+                 setTimeout(initDashboardCharts, 100);
+             });
+        }
     </script>
     <script src="script.js?v=<?php echo time(); ?>"></script>
 </body>

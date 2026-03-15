@@ -548,9 +548,18 @@ body {
 
 .students-table th,
 .students-table td {
-    padding: 1rem 1.2rem;
+    padding: 0.6rem 0.8rem;
     text-align: left;
     border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+    font-size: 0.9rem;
+}
+
+/* Formatting for Teacher Name / Father Name cell */
+.students-table td[data-label="Name"] br {
+    display: none;
+}
+.students-table td[data-label="Name"] span::before {
+    content: " / ";
 }
 
 .students-table th {
@@ -680,8 +689,8 @@ body {
 
     .students-table th,
     .students-table td {
-        padding: 0.8rem;
-        font-size: 0.9rem;
+        padding: 0.6rem;
+        font-size: 0.85rem;
     }
 
     .action-btn {
@@ -710,20 +719,24 @@ body {
     
     .students-table td {
         text-align: right;
-        padding-left: 50%;
+        padding-left: 35%;
         position: relative;
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        min-height: 40px;
+        min-height: 35px;
+        height: auto;
         display: flex;
         justify-content: flex-end;
         align-items: center;
+        white-space: normal;
+        word-break: break-word;
+        flex-wrap: wrap;
     }
     
     .students-table td::before {
         content: attr(data-label);
         position: absolute;
-        left: 1rem;
-        width: 40%;
+        left: 0.5rem;
+        width: 30%;
         text-align: left;
         font-weight: 700;
         color: #00d4ff;
@@ -902,6 +915,43 @@ body {
 .not-assigned { color:#666; }
 .master-msg { color:#00d4ff; margin-bottom:1rem; }
 .filter-container { margin-bottom: 1.5rem; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; }
+
+/* Responsive Table Wrapper */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Filter Box Styling (Responsive Button Group) */
+.filter-box {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+/* Class Filter Select Styling */
+.filter-select {
+    padding: 0.8rem;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #e0e0e0;
+    border-radius: 6px;
+    min-width: 200px;
+    max-width: 100%;
+}
+
+/* View List Header Layout */
+.view-list-header-overlay {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
 .filter-label { color: #00d4ff; display: block; margin-bottom: 0.5rem; }
 .attendance-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
 .attendance-header h3 { margin: 0; color: #e0e0e0; }
@@ -929,3 +979,24 @@ body {
 .student-subheading { color: #00d4ff; margin-top: 20px; }
 .student-table { margin-top:10px; }
 .student-subheading-secondary { color: #00d4ff; margin-top: 30px; }
+
+/* Prevent table header wrapping for cleaner scroll */
+.students-table th {
+    white-space: normal;
+}
+
+/* Mobile Adjustments for Filter Box */
+@media (max-width: 768px) {
+    .filter-box {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .filter-select {
+        width: 100%;
+        min-width: 0;
+    }
+    
+    .table-responsive {
+        overflow-x: visible;
+    }
+}

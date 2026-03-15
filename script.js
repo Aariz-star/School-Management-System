@@ -1,3 +1,7 @@
+// Global chart instances to manage memory
+let attendanceChartInstance = null;
+let performanceChartInstance = null;
+
 /**
  * Toggle Sidebar Visibility
  */
@@ -28,6 +32,13 @@ function showForm(formId) {
     const activeBtn = document.querySelector(`.nav-btn[onclick*="showForm('${formId}')"]`);
     if (activeBtn) {
         activeBtn.classList.add('active');
+    }
+
+    // Optimize: Only initialize charts if Dashboard is active, otherwise destroy them
+    if (formId === 'dashboard_view') {
+        setTimeout(initDashboardCharts, 200);
+    } else {
+        destroyDashboardCharts();
     }
     
     // Close sidebar on mobile if open
@@ -156,6 +167,26 @@ function removeSubjectFromClass(compositeKey) {
 }
 
 /**
+ * Load Teachers List via AJAX
+ */
+function loadTeachersList() {
+    const tbody = document.getElementById('teachers_table_body');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Loading teachers data...</td></tr>';
+    
+    fetch('fetch_teachers_list.php')
+    .then(response => response.text())
+    .then(html => {
+        tbody.innerHTML = html;
+    })
+    .catch(err => {
+        console.error('Error loading teachers:', err);
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:red;">Error loading data.</td></tr>';
+    });
+}
+
+/**
  * Toggle Book Input in Add Class Form
  */
 function toggleBookInput(checkbox) {
@@ -253,18 +284,26 @@ function updateSubjects(classId, prefix) {
  * Initialize Dashboard Charts (Attendance & Grades)
  */
 function initDashboardCharts() {
+    // If charts already exist, don't recreate them (saves memory)
+    if (attendanceChartInstance && performanceChartInstance) return;
+    
     // Check if chart data is available
     if (typeof window.schoolChartData === 'undefined') {
         console.warn('Chart data not available');
         return;
     }
 
+    // Ensure canvas elements exist before trying to draw
+    const attCanvas = document.getElementById('attendanceChart');
+    const perfCanvas = document.getElementById('performanceChart');
+    if (!attCanvas || !perfCanvas) return;
+
     const data = window.schoolChartData;
 
     // 1. Attendance Trend Chart (Line Chart)
-    const attendanceCtx = document.getElementById('attendanceChart');
-    if (attendanceCtx && data.dates && data.dates.length > 0) {
-        new Chart(attendanceCtx, {
+    if (data.dates && data.dates.length > 0) {
+        if (attendanceChartInstance) attendanceChartInstance.destroy();
+        attendanceChartInstance = new Chart(attCanvas, {
             type: 'line',
             data: {
                 labels: data.dates,
@@ -350,9 +389,9 @@ function initDashboardCharts() {
     }
 
     // 2. Student Performance (Grades) Chart (Bar Chart)
-    const performanceCtx = document.getElementById('performanceChart');
-    if (performanceCtx && data.grades && data.grades.length > 0) {
-        new Chart(performanceCtx, {
+    if (data.grades && data.grades.length > 0) {
+        if (performanceChartInstance) performanceChartInstance.destroy();
+        performanceChartInstance = new Chart(perfCanvas, {
             type: 'bar',
             data: {
                 labels: ['Excellent (80+)', 'Good (60-79)', 'Average (40-59)', 'Fail (<40)'],
@@ -432,6 +471,20 @@ function initDashboardCharts() {
     }
 }
 
+/**
+ * Destroy Charts to free memory when leaving dashboard
+ */
+function destroyDashboardCharts() {
+    if (attendanceChartInstance) {
+        attendanceChartInstance.destroy();
+        attendanceChartInstance = null;
+    }
+    if (performanceChartInstance) {
+        performanceChartInstance.destroy();
+        performanceChartInstance = null;
+    }
+}
+
 // Event Listeners for URL Parameters
 document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -483,9 +536,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (btn) btn.classList.add('active-sub-btn');
         }
     });
-
-    // Initialize Dashboard Charts on page load
-    setTimeout(initDashboardCharts, 100);
 });
 
 function printAllDMCs() {
@@ -728,6 +778,47 @@ function sortInvoices(by) {
 }
 
 /**
+ * Admin Reset Password Function (For View List)
+ */
+function adminResetPassword(id, type) {
+    const newPass = prompt("Enter new password for this user:");
+    if (newPass === null) return; // Cancelled
+    if (newPass.length < 6) {
+        alert("Password must be at least 6 characters.");
+        return;
+    }
+
+    // Get CSRF token from the delete button in the same row or generic
+    // We can assume csrf_token is available in the delete-btn data attribute nearby, 
+    // or mostly reliably from any delete btn on page
+    const csrfToken = document.querySelector('.delete-btn') ? document.querySelector('.delete-btn').getAttribute('data-csrf') : '';
+    
+    if (!csrfToken) {
+        alert("Security token missing. Please refresh page.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('id', id);
+    formData.append('type', type);
+    formData.append('password', newPass);
+    formData.append('csrf_token', csrfToken);
+
+    fetch('admin_reset_user_password.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while resetting password.');
+    });
+}
+
+/**
  * Switch between edit tabs (Bulk/Individual)
  */
 function switchEditTab(tab) {
@@ -829,4 +920,192 @@ function loadSingleInvoiceDetails() {
     } else {
         document.getElementById('single_details').style.display = 'none';
     }
+}
+
+/**
+ * Password Manager: Search User
+ */
+function searchUserForReset() {
+    const type = document.getElementById('pm_type_select').value;
+    const id = document.getElementById('pm_search_id').value;
+    const container = document.getElementById('pm_result_container');
+
+    if (!id) {
+        alert("Please enter an ID to search.");
+        return;
+    }
+
+    // Hide previous results
+    container.style.display = 'none';
+
+    fetch(`search_user.php?type=${type}&id=${id}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const user = data.data;
+                
+                // Populate Data
+                document.getElementById('pm_name').innerText = user.name;
+                document.getElementById('pm_subtitle').innerText = user.subtitle;
+                document.getElementById('pm_id_display').innerText = user.id;
+                document.getElementById('pm_detail1').innerText = user.detail1;
+                document.getElementById('pm_detail2').innerText = user.detail2;
+                
+                const statusElem = document.getElementById('pm_account_status');
+                if (user.has_account) {
+                    statusElem.innerHTML = '<strong style="color: #10b981;">✔ User Account Active</strong>';
+                } else {
+                    statusElem.innerHTML = '<strong style="color: #ef4444;">✘ No User Account Found</strong>';
+                }
+
+                // Set Hidden Fields
+                document.getElementById('pm_hidden_id').value = user.id;
+                document.getElementById('pm_hidden_type').value = user.type;
+                document.getElementById('pm_new_password').value = ''; // Clear password field
+
+                // Show Container
+                container.style.display = 'block';
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Error searching for user.");
+        });
+}
+
+/**
+ * Password Manager: Submit Reset
+ */
+function submitAdminPasswordReset() {
+    const id = document.getElementById('pm_hidden_id').value;
+    const type = document.getElementById('pm_hidden_type').value;
+    const pass = document.getElementById('pm_new_password').value;
+    
+    // Reuse existing logic but via this UI
+    // We can call the backend script manually here to handle the UI feedback better
+    const csrfToken = document.getElementById('pm_csrf').value;
+
+    const formData = new FormData();
+    formData.append('id', id);
+    formData.append('type', type);
+    formData.append('password', pass);
+    formData.append('csrf_token', csrfToken);
+
+    fetch('admin_reset_user_password.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("✅ Password updated successfully!");
+            document.getElementById('pm_new_password').value = '';
+        } else {
+            alert("❌ " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while resetting password.');
+    });
+}
+
+/**
+ * Password Manager: Search User
+ */
+function searchUserForReset() {
+    const type = document.getElementById('pm_type_select').value;
+    const id = document.getElementById('pm_search_id').value;
+    const container = document.getElementById('pm_result_container');
+
+    if (!id) {
+        alert("Please enter an ID to search.");
+        return;
+    }
+
+    // Hide previous results
+    container.style.display = 'none';
+
+    fetch(`search_user.php?type=${type}&id=${id}`)
+        .then(response => response.text()) // Get raw text first to debug errors
+        .then(text => {
+            try {
+                return JSON.parse(text); // Try to parse as JSON
+            } catch (e) {
+                console.error("Server returned invalid JSON:", text);
+                throw new Error("Server Error. Check console for details.");
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                const user = data.data;
+                
+                // Populate Data
+                document.getElementById('pm_name').innerText = user.name;
+                document.getElementById('pm_subtitle').innerText = user.subtitle;
+                document.getElementById('pm_id_display').innerText = user.id;
+                document.getElementById('pm_detail1').innerText = user.detail1;
+                document.getElementById('pm_detail2').innerText = user.detail2;
+                
+                const statusElem = document.getElementById('pm_account_status');
+                if (user.has_account) {
+                    statusElem.innerHTML = '<strong style="color: #10b981;">✔ User Account Active</strong>';
+                } else {
+                    statusElem.innerHTML = '<strong style="color: #ef4444;">✘ No User Account Found</strong>';
+                }
+
+                // Set Hidden Fields
+                document.getElementById('pm_hidden_id').value = user.id;
+                document.getElementById('pm_hidden_type').value = user.type;
+                document.getElementById('pm_new_password').value = ''; // Clear password field
+
+                // Show Container
+                container.style.display = 'block';
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Error: " + error.message);
+        });
+}
+
+/**
+ * Password Manager: Submit Reset
+ */
+function submitAdminPasswordReset() {
+    const id = document.getElementById('pm_hidden_id').value;
+    const type = document.getElementById('pm_hidden_type').value;
+    const pass = document.getElementById('pm_new_password').value;
+    
+    // Reuse existing logic but via this UI
+    // We can call the backend script manually here to handle the UI feedback better
+    const csrfToken = document.getElementById('pm_csrf').value;
+
+    const formData = new FormData();
+    formData.append('id', id);
+    formData.append('type', type);
+    formData.append('password', pass);
+    formData.append('csrf_token', csrfToken);
+
+    fetch('admin_reset_user_password.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("✅ Password updated successfully!");
+            document.getElementById('pm_new_password').value = '';
+        } else {
+            alert("❌ " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while resetting password.');
+    });
 }
