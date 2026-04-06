@@ -31,6 +31,7 @@ $students_res = $s_stmt->get_result();
 <head>
     <meta charset="UTF-8">
     <title>Print All DMCs</title>
+    <link rel="icon" href="logo.jpg" type="image/jpeg">
     <link rel="stylesheet" href="reports.css?v=<?php echo time(); ?>">
 </head>
 <body>

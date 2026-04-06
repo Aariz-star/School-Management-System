@@ -64,6 +64,7 @@ while($row = $s_res->fetch_assoc()) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" href="logo.jpg" type="image/jpeg">
     <meta charset="UTF-8">
     <title>Fee Receipt - <?= htmlspecialchars($invoice['title']) ?></title>
     <link rel="stylesheet" href="reports.css?v=<?php echo time(); ?>">

@@ -12,6 +12,24 @@ session_set_cookie_params([
     'samesite' => 'Lax'
 ]);
 session_start();
+
+// Prevent browser caching (Security measure for Back/Forward buttons)
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
+// If the user is already logged in, redirect them to their respective dashboard
+if (isset($_SESSION['user_id'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header("Location: index.php");
+    } elseif ($_SESSION['role'] === 'teacher') {
+        header("Location: teacher_dashboard.php");
+    } elseif ($_SESSION['role'] === 'student') {
+        header("Location: student_dashboard.php");
+    }
+    exit;
+}
+
 include 'config.php';
 
 // Check for error message from previous attempt (Post-Redirect-Get pattern)
@@ -101,92 +119,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="logo.jpg" type="image/jpeg">
     <title>Login - School Management System</title>
     <link rel="stylesheet" href="styles.css?v=<?php echo time(); ?>">
-    <style>
-        body { 
-            display: flex; 
-            flex-direction: column;
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-        }
-        .login-container { 
-            width: 100%; 
-            max-width: 450px; 
-            padding: 2rem;
-        }
-        .login-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .login-header h1 {
-            color: #00d4ff;
-            font-size: 2rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .login-header p {
-            color: #999;
-        }
-        /* Password Toggle & Remember Me Styles */
-        .password-wrapper {
-            position: relative;
-            width: 100%;
-        }
-        .password-wrapper input {
-            width: 100%;
-            padding-right: 45px; /* Space for the eye icon */
-        }
-        .toggle-password {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #00d4ff;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0.7;
-            transition: all 0.3s ease;
-        }
-        .toggle-password:hover {
-            opacity: 1;
-            transform: translateY(-50%) scale(1.1);
-        }
-        .remember-me-container {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 1rem;
-            color: #e0e0e0;
-            font-size: 0.9rem;
-        }
-        .remember-me-container input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: #00d4ff;
-            cursor: pointer;
-        }
-        .remember-me-container label {
-            cursor: pointer;
-            user-select: none;
-        }
-        @media (max-width: 480px) {
-            .login-container {
-                padding: 1rem;
-            }
-            .login-header h1 {
-                font-size: 1.5rem;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="animations.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="loader.css?v=<?php echo time(); ?>">
 </head>
-<body>
+<body class="login-body">
+
+    <!-- Page Pre-Loader -->
+    <div class="loader-wrapper">
+        <div class="loading">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
     <div class="login-container">
         <div class="login-header">
             <h1>Ideal Model School</h1>
@@ -225,23 +175,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button class="submit-btn" type="submit">Sign In</button>
         </form>
     </div>
-
     <script>
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const eyeIcon = document.getElementById('eye-icon');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                // Switch to Eye Off Icon
-                eyeIcon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07-2.3 2.3"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
-            } else {
-                passwordInput.type = 'password';
-                // Switch back to Eye Icon
-                eyeIcon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+        // Page loader
+        window.addEventListener('load', function() {
+            const loader = document.querySelector('.loader-wrapper');
+            if (loader) {
+                loader.classList.add('hidden');
             }
-        }
+        });
     </script>
+    <script src="animations.js?v=<?php echo time(); ?>"></script>
 </body>
 
 </html>

@@ -7,10 +7,24 @@ require_once 'teacher_dashboard_logic.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Dashboard - Ideal Model School</title>
+    <link rel="icon" href="logo.jpg" type="image/jpeg">
     <link rel="stylesheet" href="styles.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="teacher_dashboard.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="animations.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="loader.css?v=<?php echo time(); ?>">
 </head>
 <body>
+
+    <!-- Page Pre-Loader -->
+    <div class="loader-wrapper">
+        <div class="loading">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
 
     <!-- Notification Messages -->
     <?php if (isset($_SESSION['success'])): ?>
@@ -329,7 +343,17 @@ require_once 'teacher_dashboard_logic.php';
             <?php endif; ?>
         </div>
     </div>
+    <script>
+        // Page loader
+        window.addEventListener('load', function() {
+            const loader = document.querySelector('.loader-wrapper');
+            if (loader) {
+                loader.classList.add('hidden');
+            }
+        });
+    </script>
     <script src="script.js?v=<?php echo time(); ?>"></script>
     <script src="teacher_dashboard.js?v=<?php echo time(); ?>"></script>
+    <script src="animations.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>

@@ -84,10 +84,7 @@ function loadClassSubjectsTable(classId) {
     const noClassMsg = document.getElementById('no_class_selected_msg');
     const addSubjectClassId = document.getElementById('add_subject_class_id');
     
-    console.log('🔍 loadClassSubjectsTable called with classId:', classId);
-    
     if (!classId) {
-        console.log('ℹ️ No class ID provided, hiding container');
         container.classList.remove('active');
         container.style.display = 'none';
         noClassMsg.style.display = 'block';
@@ -103,22 +100,16 @@ function loadClassSubjectsTable(classId) {
     container.style.display = 'block';
     noClassMsg.style.display = 'none';
     
-    console.log('📤 Fetching: fetch_class_subjects_details.php?class_id=' + classId);
-    
     // Fetch subjects for this class
     fetch(`fetch_class_subjects_details.php?class_id=${encodeURIComponent(classId)}`)
         .then(response => {
-            console.log('📥 Response received:', response.status, response.ok);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             return response.text();
         })
         .then(html => {
-            console.log('✅ HTML received, length:', html.length);
-            console.log('📋 HTML Preview:', html.substring(0, 200));
             tableWrapper.innerHTML = html;
-            console.log('✅ Container HTML updated');
         })
         .catch(error => {
             console.error('❌ Error loading subjects:', error);
@@ -134,8 +125,6 @@ function removeSubjectFromClass(compositeKey) {
         return;
     }
     
-    console.log('🗑️ Removing subject with composite key:', compositeKey);
-    
     const formData = new FormData();
     formData.append('composite_key', compositeKey);
     
@@ -150,7 +139,6 @@ function removeSubjectFromClass(compositeKey) {
         return response.json();
     })
     .then(data => {
-        console.log('✅ Remove response:', data);
         if (data.success) {
             // Reload the table
             const classId = document.getElementById('class_subjects_filter').value;
@@ -284,25 +272,38 @@ function updateSubjects(classId, prefix) {
  * Initialize Dashboard Charts (Attendance & Grades)
  */
 function initDashboardCharts() {
+    console.log('initDashboardCharts called');
+    console.log('Chart instances:', { attendanceChartInstance, performanceChartInstance });
+    
     // If charts already exist, don't recreate them (saves memory)
-    if (attendanceChartInstance && performanceChartInstance) return;
+    if (attendanceChartInstance && performanceChartInstance) {
+        console.log('Charts already exist, skipping initialization');
+        return;
+    }
     
     // Check if chart data is available
     if (typeof window.schoolChartData === 'undefined') {
-        console.warn('Chart data not available');
+        console.warn('Chart data not available - window.schoolChartData is undefined');
         return;
     }
 
     // Ensure canvas elements exist before trying to draw
     const attCanvas = document.getElementById('attendanceChart');
     const perfCanvas = document.getElementById('performanceChart');
-    if (!attCanvas || !perfCanvas) return;
+    console.log('Canvas elements found:', { attCanvas: !!attCanvas, perfCanvas: !!perfCanvas });
+    
+    if (!attCanvas || !perfCanvas) {
+        console.warn('Canvas elements not found');
+        return;
+    }
 
     const data = window.schoolChartData;
+    console.log('Chart data loaded:', data);
 
     // 1. Attendance Trend Chart (Line Chart)
     if (data.dates && data.dates.length > 0) {
         if (attendanceChartInstance) attendanceChartInstance.destroy();
+        console.log('Creating attendance chart...');
         attendanceChartInstance = new Chart(attCanvas, {
             type: 'line',
             data: {
@@ -468,6 +469,9 @@ function initDashboardCharts() {
                 }
             }
         });
+        console.log('Charts created successfully');
+    } else {
+        console.warn('No chart data available - dates array is empty');
     }
 }
 
@@ -485,17 +489,33 @@ function destroyDashboardCharts() {
     }
 }
 
+// Prevent Back/Forward Cache (bfcache) navigation issues
+window.addEventListener('pageshow', function(event) {
+    // Force a reload if the page was loaded from browser history/cache
+    if (event.persisted) {
+        window.location.reload();
+    }
+});
+
+// Prevent returning to the login page via the Back button without logging out
+if (window.location.pathname.endsWith('index.php') || window.location.pathname.endsWith('/')) {
+    window.history.pushState(null, null, window.location.href);
+    window.addEventListener('popstate', function(event) {
+        window.history.pushState(null, null, window.location.href);
+    });
+}
+
 // Event Listeners for URL Parameters
 document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     
     // Get return_to section from window variable or URL params
-    let sectionToShow = window.returnToSection || urlParams.get('return_to') || 'dashboard';
+    let sectionToShow = window.returnToSection || urlParams.get('return_to') || 'dashboard_view';
     
     // Validate section exists before showing it
     const targetSection = document.getElementById(sectionToShow);
     if (!targetSection) {
-        sectionToShow = 'dashboard';
+        sectionToShow = 'dashboard_view';
     }
     
     // Show the appropriate section
@@ -536,6 +556,15 @@ document.addEventListener('DOMContentLoaded', function() {
             if (btn) btn.classList.add('active-sub-btn');
         }
     });
+    
+    // Set up Password Manager Reset Event Listener
+    const pmResetForm = document.getElementById('pm_reset_form');
+    if (pmResetForm) {
+        pmResetForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitAdminPasswordReset();
+        });
+    }
 });
 
 function printAllDMCs() {
@@ -716,7 +745,6 @@ function deleteInvoice(invoiceId) {
         })
         .then(response => response.text())
         .then(text => {
-            console.log('Raw response:', text);
             try {
                 const data = JSON.parse(text);
                 if (data.success) {
@@ -927,108 +955,18 @@ function loadSingleInvoiceDetails() {
  */
 function searchUserForReset() {
     const type = document.getElementById('pm_type_select').value;
-    const id = document.getElementById('pm_search_id').value;
+    const username = document.getElementById('pm_search_username').value.trim();
     const container = document.getElementById('pm_result_container');
 
-    if (!id) {
-        alert("Please enter an ID to search.");
+    if (!username) {
+        alert("Please enter a username to search.");
         return;
     }
 
     // Hide previous results
     container.style.display = 'none';
 
-    fetch(`search_user.php?type=${type}&id=${id}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const user = data.data;
-                
-                // Populate Data
-                document.getElementById('pm_name').innerText = user.name;
-                document.getElementById('pm_subtitle').innerText = user.subtitle;
-                document.getElementById('pm_id_display').innerText = user.id;
-                document.getElementById('pm_detail1').innerText = user.detail1;
-                document.getElementById('pm_detail2').innerText = user.detail2;
-                
-                const statusElem = document.getElementById('pm_account_status');
-                if (user.has_account) {
-                    statusElem.innerHTML = '<strong style="color: #10b981;">✔ User Account Active</strong>';
-                } else {
-                    statusElem.innerHTML = '<strong style="color: #ef4444;">✘ No User Account Found</strong>';
-                }
-
-                // Set Hidden Fields
-                document.getElementById('pm_hidden_id').value = user.id;
-                document.getElementById('pm_hidden_type').value = user.type;
-                document.getElementById('pm_new_password').value = ''; // Clear password field
-
-                // Show Container
-                container.style.display = 'block';
-            } else {
-                alert(data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert("Error searching for user.");
-        });
-}
-
-/**
- * Password Manager: Submit Reset
- */
-function submitAdminPasswordReset() {
-    const id = document.getElementById('pm_hidden_id').value;
-    const type = document.getElementById('pm_hidden_type').value;
-    const pass = document.getElementById('pm_new_password').value;
-    
-    // Reuse existing logic but via this UI
-    // We can call the backend script manually here to handle the UI feedback better
-    const csrfToken = document.getElementById('pm_csrf').value;
-
-    const formData = new FormData();
-    formData.append('id', id);
-    formData.append('type', type);
-    formData.append('password', pass);
-    formData.append('csrf_token', csrfToken);
-
-    fetch('admin_reset_user_password.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert("✅ Password updated successfully!");
-            document.getElementById('pm_new_password').value = '';
-        } else {
-            alert("❌ " + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while resetting password.');
-    });
-}
-
-/**
- * Password Manager: Search User
- */
-function searchUserForReset() {
-    const type = document.getElementById('pm_type_select').value;
-    const id = document.getElementById('pm_search_id').value;
-    const container = document.getElementById('pm_result_container');
-
-    if (!id) {
-        alert("Please enter an ID to search.");
-        return;
-    }
-
-    // Hide previous results
-    container.style.display = 'none';
-
-    fetch(`search_user.php?type=${type}&id=${id}`)
+    fetch(`search_user.php?type=${type}&username=${encodeURIComponent(username)}`)
         .then(response => response.text()) // Get raw text first to debug errors
         .then(text => {
             try {
@@ -1045,7 +983,7 @@ function searchUserForReset() {
                 // Populate Data
                 document.getElementById('pm_name').innerText = user.name;
                 document.getElementById('pm_subtitle').innerText = user.subtitle;
-                document.getElementById('pm_id_display').innerText = user.id;
+                document.getElementById('pm_username_display').innerText = username;
                 document.getElementById('pm_detail1').innerText = user.detail1;
                 document.getElementById('pm_detail2').innerText = user.detail2;
                 

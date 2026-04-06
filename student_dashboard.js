@@ -90,7 +90,6 @@ function filterResults() {
  * Initialize on page load
  */
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Student Dashboard Loaded');
     initNotifications();
     initFileUploadHandlers();
     filterResults();

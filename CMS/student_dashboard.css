@@ -1,0 +1,320 @@
+/* Student Dashboard Specific Styles */
+
+/* Dashboard Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.dashboard-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 1.5rem;
+    transition: transform 0.2s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    border-color: #00d4ff;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #333;
+    padding-bottom: 0.5rem;
+}
+
+.card-header h3 {
+    margin: 0;
+    color: #00d4ff;
+    font-size: 1.2rem;
+}
+
+/* Stats Big Number */
+.stat-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #e0e0e0;
+}
+
+.stat-label {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+/* List Items in Cards */
+.list-item {
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.list-item:last-child {
+    border-bottom: none;
+}
+
+.item-title {
+    font-weight: bold;
+    display: block;
+}
+
+.item-meta {
+    font-size: 0.85rem;
+    color: #999;
+}
+
+/* Timetable Grid */
+.timetable-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.day-column {
+    background: rgba(255,255,255,0.02);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.day-header {
+    text-align: center;
+    color: #00d4ff;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.class-slot {
+    background: #252525;
+    padding: 0.8rem;
+    margin-bottom: 0.8rem;
+    border-radius: 5px;
+    border-left: 3px solid #00d4ff;
+}
+
+.empty-state {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+}
+
+/* Utilities */
+.text-center { text-align: center; }
+.text-success { color: #10b981; }
+.text-danger { color: #ef4444; }
+.text-pending { color: #00d4ff; }
+.font-bold { font-weight: bold; }
+
+/* File Input Styling */
+input[type="file"] {
+    cursor: pointer;
+}
+
+/* Notification Styles */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    animation: slideIn 0.3s ease-out;
+}
+
+.notification strong {
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+.notification p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.notification-success {
+    background: #10b981;
+    color: white;
+}
+
+.notification-error {
+    background: #ef4444;
+    color: white;
+}
+
+/* Fee Invoices */
+.invoice-number-box {
+    background: #00d4ff;
+    color: #000;
+    padding: 0.8rem;
+    border-radius: 6px;
+    margin: 0.8rem 0;
+    font-weight: bold;
+    text-align: center;
+}
+
+.invoice-number-box p {
+    margin: 0;
+}
+
+.invoice-number-box p:first-child {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+.invoice-number-box p:last-child {
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+}
+
+.invoice-status {
+    font-weight: bold;
+}
+
+.invoice-status[data-status="Paid"] {
+    color: #10b981;
+}
+
+.invoice-status[data-status="Unpaid"] {
+    color: #ef4444;
+}
+
+.invoice-status[data-status="Partially Paid"] {
+    color: #f59e0b;
+}
+
+.invoice-status[data-status="Overdue"] {
+    color: #ef4444;
+}
+
+.bank-details {
+    background: rgba(255,255,255,0.05);
+    padding: 0.5rem;
+    border-radius: 4px;
+    margin: 0.5rem 0;
+    font-size: 0.85rem;
+}
+
+.bank-details p {
+    margin: 0;
+}
+
+.bank-name {
+    color: #00d4ff;
+}
+
+.bank-note {
+    font-size: 0.75rem;
+    margin-top: 0.3rem;
+    color: #aaa;
+}
+
+.fee-upload-form {
+    margin-top: 1rem;
+}
+
+.fee-input {
+    width: 100%;
+    margin-bottom: 0.5rem;
+    padding: 8px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #fff;
+    border-radius: 4px;
+}
+
+.file-upload-label {
+    display: block;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+    background: #333;
+    padding: 10px;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+.file-upload-label:hover {
+    background: #444;
+}
+
+.file-upload-label .upload-text {
+    display: block;
+}
+
+.file-input {
+    display: none;
+}
+
+.submit-btn-full {
+    width: 100%;
+}
+
+.submit-btn-secondary {
+    background: #333;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+}
+
+/* Results/Grades Filtering */
+.filter-box {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(255,255,255,0.05);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.filter-box label {
+    color: #00d4ff;
+    font-weight: bold;
+}
+
+.term-filter {
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #333;
+    background: #1a1a1a;
+    color: #e0e0e0;
+    cursor: pointer;
+}
+
+.term-summary {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    border-left: 4px solid #00d4ff;
+}
+
+.term-summary h3 {
+    margin-top: 0;
+    color: #00d4ff;
+    font-size: 1.1rem;
+}
+
+.summary-stats {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.summary-stats div {
+    color: #e0e0e0;
+}
+
+.summary-stats strong {
+    color: #fff;
+}

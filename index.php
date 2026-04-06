@@ -14,6 +14,12 @@ session_set_cookie_params([
 ]);
 session_start();
 
+// Prevent browser caching (Security measure for Back/Forward buttons)
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
+
 // Authentication Check
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -59,11 +65,25 @@ require_once 'admin_dashboard_logic.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ideal Model School - Management System</title>
+    <link rel="icon" href="logo.jpg" type="image/jpeg">
     <link rel="stylesheet" href="styles.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="admin_dashboard.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="animations.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="loader.css?v=<?php echo time(); ?>">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
+
+    <!-- Page Pre-Loader -->
+    <div class="loader-wrapper">
+        <div class="loading">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
 
     <!-- Notification Messages -->
     <?php if (isset($_SESSION['success'])): ?>
@@ -695,6 +715,7 @@ require_once 'admin_dashboard_logic.php';
                         <thead>
                             <tr>
                                 <th>Roll No</th>
+                                <th>Std ID</th>
                                 <th>Student Name</th>
                                 <th>Father Name</th>
                                 <th>Attendance %</th>
@@ -704,7 +725,7 @@ require_once 'admin_dashboard_logic.php';
                         <tbody>
                             <?php
                             // Fetch students with attendance stats
-                            $sql = "SELECT s.id, s.full_name, g.guardian_name,
+                            $sql = "SELECT s.id, s.std_id, s.full_name, g.guardian_name,
                                     (SELECT COUNT(*) FROM attendance WHERE student_id = s.id) as total_days,
                                     (SELECT COUNT(*) FROM attendance WHERE student_id = s.id AND status = 'Present') as present_days,
                                     a.status as today_status
@@ -741,6 +762,7 @@ require_once 'admin_dashboard_logic.php';
 
                                     echo "<tr>";
                                     echo "<td data-label='Roll No'><strong>$roll_no</strong></td>";
+                                    echo "<td data-label='Std ID' style='color: #00d4ff; font-weight: bold;'>" . htmlspecialchars($row['std_id'] ?? 'N/A') . "</td>";
                                     echo "<td data-label='Name'>" . htmlspecialchars($row['full_name']) . "</td>";
                                     echo "<td data-label='Father Name'>" . htmlspecialchars($row['guardian_name'] ?? '-') . "</td>";
                                     echo "<td data-label='Attendance %'><span style='color:$percent_color; font-weight:bold;'>$percent%</span> <span style='font-size:0.8em; color:#999;'>({$row['present_days']}/{$row['total_days']})</span></td>";
@@ -848,7 +870,7 @@ require_once 'admin_dashboard_logic.php';
                     <input type="hidden" id="enter_h_term" name="term" value="<?= htmlspecialchars($g_term) ?>">
 
                     <table class="students-table table-no-margin">
-                        <thead><tr><th>Roll No</th><th>Student Name</th><th>Father Name</th><th>Score (0-100)</th></tr></thead>
+                        <thead><tr><th>Roll No</th><th>Std ID</th><th>Student Name</th><th>Father Name</th><th>Score (0-100)</th></tr></thead>
                         <tbody id="enter_grade_table_body">
                             <?php if ($g_class_id > 0 && $active_grade_section == 'enter') include 'fetch_grades_inline.php'; ?>
                         </tbody>
@@ -894,7 +916,7 @@ require_once 'admin_dashboard_logic.php';
                     <input type="hidden" id="update_h_term" name="term" value="<?= htmlspecialchars($g_term) ?>">
 
                     <table class="students-table table-no-margin">
-                        <thead><tr><th>Roll No</th><th>Student Name</th><th>Father Name</th><th>Score (0-100)</th></tr></thead>
+                        <thead><tr><th>Roll No</th><th>Std ID</th><th>Student Name</th><th>Father Name</th><th>Score (0-100)</th></tr></thead>
                         <tbody id="update_grade_table_body">
                             <?php if ($g_class_id > 0 && $active_grade_section == 'update') include 'fetch_grades_inline.php'; ?>
                         </tbody>
@@ -927,7 +949,7 @@ require_once 'admin_dashboard_logic.php';
                 </div>
 
                 <table class="students-table table-no-margin">
-                    <thead><tr><th>Roll No</th><th>Student Name</th><th>Father Name</th><th>Percentage</th><th>DMC</th></tr></thead>
+                    <thead><tr><th>Roll No</th><th>Std ID</th><th>Student Name</th><th>Father Name</th><th>Percentage</th><th>DMC</th></tr></thead>
                     <tbody id="view_grade_table_body">
                         <!-- View mode not loaded inline to avoid complexity, use AJAX or rely on fetch_grades_inline if adapted -->
                     </tbody>
@@ -1233,7 +1255,7 @@ require_once 'admin_dashboard_logic.php';
         <!-- ──────────────────────────────────────────────── -->
         <div id="password_manager" class="form-content">
             <h2>User Password Manager</h2>
-            <p class="helper-text">Search for a student or teacher by ID to verify their profile and reset their password.</p>
+            <p class="helper-text">Search for a student or teacher by Username to verify their profile and reset their password.</p>
             
             <div class="filter-box" style="align-items: flex-end;">
                 <div style="flex: 1;">
@@ -1244,24 +1266,24 @@ require_once 'admin_dashboard_logic.php';
                     </select>
                 </div>
                 <div style="flex: 2;">
-                    <label class="filter-label">Search ID:</label>
-                    <input type="number" id="pm_search_id" placeholder="Enter ID (e.g. 801)" class="filter-select" style="width: 100%;">
+                    <label class="filter-label">Search Username:</label>
+                    <input type="text" id="pm_search_username" placeholder="Enter Username (e.g. ims-0036)" class="filter-select" style="width: 100%;">
                 </div>
                 <button class="submit-btn" type="button" onclick="searchUserForReset()" style="margin: 0; width: auto; min-width: 120px;">Search</button>
             </div>
 
             <!-- Result Container -->
-            <div id="pm_result_container" style="display: none; margin-top: 2rem; background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 8px; border: 1px solid rgba(0, 212, 255, 0.2);">
-                <h3 class="sub-heading" style="color: #00d4ff; border-bottom: 1px solid #333; padding-bottom: 0.5rem; margin-bottom: 1rem;">User Profile</h3>
+            <div id="pm_result_container" class="pm-result-container">
+                <h3 class="sub-heading pm-profile-heading">User Profile</h3>
                 
-                <div style="display: flex; gap: 2rem; flex-wrap: wrap; align-items: center;">
+                <div class="pm-flex-wrapper">
                     <!-- Profile Info -->
-                    <div style="flex: 1; min-width: 250px;">
-                        <h2 id="pm_name" style="margin: 0; color: #fff;">User Name</h2>
-                        <p id="pm_subtitle" style="color: #00d4ff; margin: 5px 0 15px 0;">Class/Role</p>
+                    <div class="pm-profile-info">
+                        <h2 id="pm_name" class="pm-name-text">User Name</h2>
+                        <p id="pm_subtitle" class="pm-subtitle-text">Class/Role</p>
                         
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9rem; color: #ccc;">
-                            <div><strong>ID:</strong> <span id="pm_id_display"></span></div>
+                        <div class="pm-details-grid">
+                            <div><strong>Username:</strong> <span id="pm_username_display"></span></div>
                             <div id="pm_detail1"></div>
                             <div id="pm_detail2"></div>
                             <div id="pm_account_status"></div>
@@ -1269,16 +1291,16 @@ require_once 'admin_dashboard_logic.php';
                     </div>
 
                     <!-- Action Form -->
-                    <div style="flex: 1; min-width: 250px; background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: 8px;">
-                        <h4 style="margin-top: 0; color: #e0e0e0;">Reset Password</h4>
-                        <form onsubmit="event.preventDefault(); submitAdminPasswordReset();">
+                    <div class="pm-action-form-box">
+                        <h4 class="pm-reset-heading">Reset Password</h4>
+                        <form id="pm_reset_form">
                             <input type="hidden" id="pm_hidden_id">
                             <input type="hidden" id="pm_hidden_type">
                             <input type="hidden" id="pm_csrf" value="<?= $_SESSION['csrf_token'] ?>">
                             
-                            <input type="password" id="pm_new_password" placeholder="New Password" required minlength="6" style="width: 100%; margin-bottom: 1rem; padding: 0.8rem; background: #1a1a1a; border: 1px solid #333; color: white;">
+                            <input type="password" id="pm_new_password" class="pm-password-input" placeholder="New Password" required minlength="6">
                             
-                            <button type="submit" class="submit-btn" style="margin-top: 0;">Update Password</button>
+                            <button type="submit" class="submit-btn pm-reset-btn">Update Password</button>
                         </form>
                     </div>
                 </div>
@@ -1309,14 +1331,19 @@ require_once 'admin_dashboard_logic.php';
         // Pass section to display
         window.returnToSection = "<?= htmlspecialchars($return_to_section ?? 'dashboard_view') ?>";
         
-        // Initial chart load if dashboard is default
-        if (window.returnToSection === 'dashboard_view') {
-             document.addEventListener('DOMContentLoaded', function() {
-                 setTimeout(initDashboardCharts, 100);
-             });
-        }
+        // Chart initialization is now handled by animations.js after dashboard is set active
+    </script>
+    <script>
+        // Page loader
+        window.addEventListener('load', function() {
+            const loader = document.querySelector('.loader-wrapper');
+            if (loader) {
+                loader.classList.add('hidden');
+            }
+        });
     </script>
     <script src="script.js?v=<?php echo time(); ?>"></script>
+    <script src="animations.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
 

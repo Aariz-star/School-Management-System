@@ -81,7 +81,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("sssssii", $full_name, $admission_date, $dob, $email, $contact, $class_id, $guardian_id);
 
         if ($stmt->execute()) {
-            $_SESSION['success'] = "✓ Student registered successfully! ID: " . $conn->insert_id;
+            $student_id = $conn->insert_id;
+            
+            // 3. Generate std_id and update the student record
+            $std_id = 'ims-' . str_pad($student_id, 4, '0', STR_PAD_LEFT);
+            $update_stmt = $conn->prepare("UPDATE students SET std_id = ? WHERE id = ?");
+            if ($update_stmt) {
+                $update_stmt->bind_param("si", $std_id, $student_id);
+                $update_stmt->execute();
+                $update_stmt->close();
+            }
+
+            // 4. Automatically create user account for the student
+            $default_pass = password_hash('student123', PASSWORD_DEFAULT);
+            $role = 'student';
+            $user_stmt = $conn->prepare("INSERT INTO users (username, password, role, related_id) VALUES (?, ?, ?, ?)");
+            if ($user_stmt) {
+                $user_stmt->bind_param("sssi", $std_id, $default_pass, $role, $student_id);
+                $user_stmt->execute();
+                $user_stmt->close();
+            }
+
+            $_SESSION['success'] = "✓ Student registered successfully! Student ID: " . $std_id . " (Account created)";
             $stmt->close();
             header("Location: " . $redirect_url);
             exit;
@@ -105,6 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="logo.jpg" type="image/jpeg">
     <title>Register Student - Ideal Model School</title>
     <link rel="stylesheet" href="styles.css">
     <style>

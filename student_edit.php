@@ -76,6 +76,7 @@ if (!$student) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="logo.jpg" type="image/jpeg">
     <title>Edit Student</title>
     <link rel="stylesheet" href="styles.css?v=<?php echo time(); ?>">
 </head>

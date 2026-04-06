@@ -73,6 +73,7 @@ while($row = $res->fetch_assoc()) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="logo.jpg" type="image/jpeg">
     <title>Edit Teacher</title>
     <link rel="stylesheet" href="styles.css?v=<?php echo time(); ?>">
 </head>

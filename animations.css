@@ -1,0 +1,456 @@
+/* ============================================
+   SMOOTH ANIMATIONS & TRANSITIONS
+   CMS Dashboard, Login, Logout, & Button Effects
+   ============================================ */
+
+/* ─── Page Transitions ─── */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+}
+
+@keyframes slideOutLeft {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-40px);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes scaleOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+
+/* ─── Button Ripple Effect ─── */
+@keyframes ripple {
+    from {
+        width: 0;
+        height: 0;
+        opacity: 0.6;
+    }
+    to {
+        width: 300px;
+        height: 300px;
+        opacity: 0;
+    }
+}
+
+/* ─── Floating Animation ─── */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* ─── Pulse Animation ─── */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* ─── Glow Animation ─── */
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(0, 212, 255, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+    }
+}
+
+/* ─── Shake Animation ─── */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+/* ─── Loading Spinner ─── */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================
+   ELEMENT ANIMATIONS
+   ============================================ */
+
+/* Header Animation */
+.header {
+    animation: slideInDown 0.8s ease-out;
+}
+
+.header-overlay {
+    animation: slideInUp 0.8s ease-out forwards 0.2s;
+}
+
+/* Sidebar Animations */
+.nav-container {
+    animation: slideInLeft 0.6s ease-out;
+}
+
+.nav-btn {
+    animation: slideInLeft 0.5s ease-out forwards;
+}
+
+/* Form Content Animations */
+.form-content {
+    /* No animation on initial load - let CSS display rules handle it */
+}
+
+.form-content.active {
+    /* Animation applied via JavaScript only when switching forms */
+}
+
+.form-content.hidden {
+    animation: slideOutLeft 0.4s ease-in forwards;
+}
+
+/* Stats Card Animations */
+.stat-card {
+    animation: slideInUp 0.6s ease-out forwards;
+    transition: all 0.3s ease;
+}
+
+/* Chart Box Animations */
+.chart-box {
+    animation: slideInUp 0.6s ease-out forwards;
+    transition: all 0.3s ease;
+}
+
+/* Table Row Animations */
+tbody tr {
+    animation: slideInUp 0.4s ease-out forwards;
+}
+
+/* ============================================
+   BUTTON ANIMATIONS & INTERACTIONS
+   ============================================ */
+
+/* Don't override button styling - styles.css handles it */
+/* Only add stuff that doesn't conflict */
+
+/* Ripple Effect on Click */
+.ripple-element {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: scale(0);
+    pointer-events: none;
+}
+
+.ripple-animate {
+    animation: ripple 0.6s ease-out;
+}
+
+/* ============================================
+   FORM ANIMATIONS
+   ============================================ */
+
+/* Form Inputs - Only animate inputs inside form-content in dashboards */
+.form-content input,
+.form-content select,
+.form-content textarea {
+    transition: all 0.3s ease;
+}
+
+.form-content input:focus,
+.form-content select:focus,
+.form-content textarea:focus {
+    transform: scale(1.02);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+}
+
+/* Password Wrapper - Position relative for absolute child positioning */
+.password-wrapper {
+    position: relative !important;
+    width: 100% !important;
+    display: block !important;
+}
+
+.password-wrapper input {
+    width: 100% !important;
+    padding-right: 45px !important;
+    display: block !important;
+}
+
+/* Toggle Password Button - MUST be absolutely positioned INSIDE the input */
+.toggle-password {
+    position: absolute !important;
+    right: 10px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 20 !important;
+    background: none !important;
+    border: none !important;
+    color: #00d4ff !important;
+    cursor: pointer !important;
+    padding: 4px 8px !important;
+    opacity: 0.8 !important;
+    transition: opacity 0.2s ease !important;
+}
+
+.toggle-password:hover {
+    opacity: 1 !important;
+}
+
+/* Override form-grid animation for login container */
+.login-container .form-grid > input,
+.login-container .form-grid > button {
+    animation: none !important;
+}
+
+/* ============================================
+   FORM GRID ITEMS
+   ============================================ */
+.form-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.form-grid > input,
+.form-grid > select,
+.form-grid > textarea,
+.form-grid > button {
+    animation: slideInUp 0.5s ease-out forwards;
+}
+.form-grid > :nth-child(n+6) { animation-delay: 0.35s; }
+
+/* ============================================
+   LOGOUT ANIMATION
+   ============================================ */
+
+.logout-confirmation {
+    animation: slideInUp 0.4s ease-out;
+}
+
+.logout-overlay {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.logout-modal {
+    animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* ============================================
+   SIDEBAR ANIMATIONS
+   ============================================ */
+
+.sidebar-overlay.active {
+    animation: fadeIn 0.3s ease-out;
+    display: block !important;
+}
+
+.nav-container.active {
+    animation: slideInLeft 0.4s ease-out;
+    animation-fill-mode: forwards;
+}
+
+/* ============================================
+   NOTIFICATION ANIMATIONS
+   ============================================ */
+
+.notification {
+    animation: slideInRight 0.5s ease-out, slideOutRight 0.5s ease-out 4.5s forwards;
+}
+
+.notification.fade-out {
+    animation: slideOutRight 0.4s ease-in forwards;
+}
+
+/* ============================================
+   PAGE LOADING ANIMATIONS
+   ============================================ */
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 212, 255, 0.3);
+    border-top: 4px solid #00d4ff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.skeleton-loader {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.1) 20%,
+        rgba(255, 255, 255, 0.05) 40%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ============================================
+   LOGIN PAGE ANIMATIONS
+   ============================================ */
+
+.login-form {
+    animation: slideInUp 0.6s ease-out;
+}
+
+.login-form h2 {
+    animation: slideInDown 0.5s ease-out;
+}
+
+.login-form input,
+.login-form button {
+    animation: slideInUp 0.5s ease-out forwards;
+}
+
+/* ============================================
+   TRANSITION CLASSES
+   ============================================ */
+
+.transition-out {
+    animation: fadeOut 0.3s ease-out forwards;
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.transition-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* ============================================
+   SMOOTH SCROLLING
+   ============================================ */
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* ============================================
+   RESPONSIVE ANIMATIONS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .nav-btn {
+        animation-delay: 0s !important;
+    }
+
+    .stat-card {
+        animation-delay: 0s !important;
+    }
+
+    .chart-box {
+        animation-delay: 0s !important;
+    }
+
+    tbody tr {
+        animation-delay: 0s !important;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY - RESPECT PREFERS-REDUCED-MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

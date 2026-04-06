@@ -490,3 +490,77 @@
     color: #fff;
     overflow: hidden;
 }
+
+/* Password Manager Styles */
+.pm-result-container {
+    display: none;
+    margin-top: 2rem;
+    background: rgba(255,255,255,0.05);
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.pm-profile-heading {
+    color: #00d4ff;
+    border-bottom: 1px solid #333;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.pm-flex-wrapper {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.pm-profile-info {
+    flex: 1;
+    min-width: 250px;
+}
+
+.pm-name-text {
+    margin: 0;
+    color: #fff;
+}
+
+.pm-subtitle-text {
+    color: #00d4ff;
+    margin: 5px 0 15px 0;
+}
+
+.pm-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #ccc;
+}
+
+.pm-action-form-box {
+    flex: 1;
+    min-width: 250px;
+    background: rgba(0,0,0,0.3);
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.pm-reset-heading {
+    margin-top: 0;
+    color: #e0e0e0;
+}
+
+.pm-password-input {
+    width: 100%;
+    margin-bottom: 1rem;
+    padding: 0.8rem;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: white;
+    border-radius: 4px;
+}
+
+.pm-reset-btn {
+    margin-top: 0;
+}

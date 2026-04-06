@@ -13,6 +13,7 @@ $view = isset($_GET['view']) && $_GET['view'] === 'teachers' ? 'teachers' : 'stu
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="logo.jpg" type="image/jpeg">
     <title><?= ucfirst($view) ?> List - Ideal Model School</title>
     <link rel="stylesheet" href="styles.css?v=<?php echo time(); ?>">
 </head>
@@ -67,13 +68,15 @@ $view = isset($_GET['view']) && $_GET['view'] === 'teachers' ? 'teachers' : 'stu
             if ($selected_class > 0) {
                 // Show all students regardless of status (active/inactive)
                 $where_clause = ($status === 'trash') ? "s.deleted_at IS NOT NULL" : "s.deleted_at IS NULL";
-                $sql = "SELECT s.id, s.full_name, s.email, s.contact_number,
+                $sql = "SELECT s.id, s.std_id, s.full_name, s.email, s.contact_number,
                                g.guardian_name, g.contact_number AS guardian_contact,
                                DATE_FORMAT(s.admission_date, '%d-%m-%Y') AS adm_date,
-                               c.name AS class_name
+                               c.name AS class_name,
+                               u.id AS user_account_id
                         FROM students s
                         LEFT JOIN classes c ON s.class_id = c.id
                         LEFT JOIN guardians g ON s.guardian_id = g.id
+                        LEFT JOIN users u ON u.related_id = s.id AND u.role = 'student'
                         WHERE $where_clause AND s.class_id = $selected_class
                         ORDER BY s.full_name";
                 $result = $conn->query($sql);
@@ -86,6 +89,7 @@ $view = isset($_GET['view']) && $_GET['view'] === 'teachers' ? 'teachers' : 'stu
                 <thead>
                     <tr>
                         <th>Roll No</th>
+                        <th>Std ID</th>
                         <th>Name</th>
                         <th>Class</th>
                         <th>Guardian Name</th>
@@ -106,7 +110,13 @@ $view = isset($_GET['view']) && $_GET['view'] === 'teachers' ? 'teachers' : 'stu
                 ?>
                     <tr>
                         <td data-label="Roll No"><?= $roll_no ?></td>
-                        <td data-label="Name"><?= htmlspecialchars($row['full_name']) ?></td>
+                        <td data-label="Std ID" style="color: #00d4ff; font-weight: bold;"><?= htmlspecialchars($row['std_id'] ?? 'N/A') ?></td>
+                        <td data-label="Name">
+                            <?= htmlspecialchars($row['full_name']) ?>
+                            <?php if ($row['user_account_id']): ?>
+                                <span class="status-dot" title="User Account Active"></span>
+                            <?php endif; ?>
+                        </td>
                         <td data-label="Class"><?= htmlspecialchars($row['class_name'] ?? '-') ?></td>
                         <td data-label="Guardian"><?= htmlspecialchars($row['guardian_name'] ?? 'N/A') ?></td>
                         <td data-label="Contact"><?= htmlspecialchars($row['guardian_contact'] ?? 'N/A') ?></td>
@@ -160,8 +170,10 @@ $view = isset($_GET['view']) && $_GET['view'] === 'teachers' ? 'teachers' : 'stu
 
             <?php
             $where_clause = ($status === 'trash') ? "t.deleted_at IS NOT NULL" : "t.deleted_at IS NULL";
-            $sql = "SELECT t.id, t.name, t.father_name, t.salary, t.phone, t.email, t.remaining_payment
+            $sql = "SELECT t.id, t.name, t.father_name, t.salary, t.phone, t.email, t.remaining_payment,
+                           u.id AS user_account_id
                     FROM teachers t
+                    LEFT JOIN users u ON u.related_id = t.id AND u.role = 'teacher'
                     WHERE $where_clause
                     ORDER BY t.id DESC";
             $result = $conn->query($sql);
@@ -187,7 +199,12 @@ $view = isset($_GET['view']) && $_GET['view'] === 'teachers' ? 'teachers' : 'stu
                 <?php while($row = $result->fetch_assoc()): ?>
                     <tr>
                         <td data-label="ID"><?= $row['id'] ?></td>
-                        <td data-label="Name"><?= htmlspecialchars($row['name']) ?></td>
+                        <td data-label="Name">
+                            <?= htmlspecialchars($row['name']) ?>
+                            <?php if ($row['user_account_id']): ?>
+                                <span class="status-dot" title="User Account Active"></span>
+                            <?php endif; ?>
+                        </td>
                         <td data-label="Father Name"><?= htmlspecialchars($row['father_name']) ?></td>
                         <td data-label="Phone"><?= htmlspecialchars($row['phone']) ?></td>
                         <td data-label="Email"><?= htmlspecialchars($row['email']) ?></td>
