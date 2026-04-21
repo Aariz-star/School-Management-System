@@ -1,7 +1,7 @@
 <?php
 // admin_dashboard_logic.php
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     exit; // Prevent direct access
 }
 

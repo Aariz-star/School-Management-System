@@ -21,8 +21,10 @@ header("Pragma: no-cache");
 header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 
 // Authentication Check
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
+    // If either user_id or role is missing, clear everything via logout
+    // This safely fixes corrupted sessions that cause blank pages
+    header("Location: logout.php");
     exit;
 }
 
@@ -36,10 +38,10 @@ if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 
 $_SESSION['last_activity'] = time();
 
 // Redirect based on role
-if ($_SESSION['role'] === 'teacher') {
+if (isset($_SESSION['role']) && $_SESSION['role'] === 'teacher') {
     header("Location: teacher_dashboard.php");
     exit;
-} elseif ($_SESSION['role'] === 'student') {
+} elseif (isset($_SESSION['role']) && $_SESSION['role'] === 'student') {
     header("Location: student_dashboard.php");
     exit;
 }
@@ -109,7 +111,7 @@ require_once 'admin_dashboard_logic.php';
         <div class="header-overlay">
             <h1>Ideal Model School</h1>
             <p>Student Management System</p>
-            <div class="welcome-msg">Welcome, <?= htmlspecialchars($_SESSION['username'] ?? $_SESSION['role']) ?></div>
+            <div class="welcome-msg">Welcome, <?= htmlspecialchars($_SESSION['username'] ?? $_SESSION['role'] ?? 'User') ?></div>
             <button class="menu-toggle" onclick="toggleSidebar()">Dashboard</button>
         </div>
     </header>

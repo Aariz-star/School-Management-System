@@ -30,10 +30,10 @@ if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 
 $_SESSION['last_activity'] = time();
 
 // Redirect based on role
-if ($_SESSION['role'] === 'teacher') {
+if (isset($_SESSION['role']) && $_SESSION['role'] === 'teacher') {
     header("Location: teacher_dashboard.php");
     exit;
-} elseif ($_SESSION['role'] === 'student') {
+} elseif (isset($_SESSION['role']) && $_SESSION['role'] === 'student') {
     header("Location: student_dashboard.php");
     exit;
 }

@@ -20,14 +20,19 @@ header("Pragma: no-cache");
 
 // If the user is already logged in, redirect them to their respective dashboard
 if (isset($_SESSION['user_id'])) {
-    if ($_SESSION['role'] === 'admin') {
-        header("Location: index.php");
-    } elseif ($_SESSION['role'] === 'teacher') {
-        header("Location: teacher_dashboard.php");
-    } elseif ($_SESSION['role'] === 'student') {
-        header("Location: student_dashboard.php");
+    if (isset($_SESSION['role'])) {
+        if ($_SESSION['role'] === 'admin') {
+            header("Location: index.php");
+        } elseif ($_SESSION['role'] === 'teacher') {
+            header("Location: teacher_dashboard.php");
+        } elseif ($_SESSION['role'] === 'student') {
+            header("Location: student_dashboard.php");
+        }
+        exit;
     }
-    exit;
+    // If user_id is set but role is missing, the session is corrupted. Wiping it out.
+    session_unset();
+    session_destroy();
 }
 
 include 'config.php';
